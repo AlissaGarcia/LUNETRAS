@@ -5,8 +5,10 @@ Repositório destinado ao LUNETRAS: sistema educacional para avaliação, regist
 * Alissa Garcia
 * Fernanda Lara
 * José Ailton
+* Lucas Emanuel
 * Tainá Rodrigues
 * Wesley Santos
+
 
 ---
 
