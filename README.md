@@ -161,20 +161,19 @@ O LUNETRAS pode ser utilizado em:
 
 ### Backend
 
-*
-*
-*
+* JAVA
+* SPRING
+* SPRING BOOT
 
 ### Frontend
 
-* 
-* 
-* 
+* HTML
+* CSS
+* REACT TYPESCRIPT
 
 ### Banco de Dados
 
-* 
-* 
+* POSTEGRESQL
 
 ---
 
@@ -185,6 +184,7 @@ O LUNETRAS pode ser utilizado em:
 * Usuário
 * Professor
 * Administrador
+* Secretário
 * Aluno
 * Turma
 * Avaliação
