@@ -30,17 +30,3 @@ A comunicação HTTP fica centralizada em:
 - `src/services/auth.ts`: contrato de autenticação (`POST /auth/login`).
 
 A tela de login (`src/pages/login/Login.tsx`) consome `login(...)`, exibe estados de carregamento/erro e persiste token e usuário no `localStorage`.
-
-## Docker
-
-Build da imagem do front-end:
-
-```bash
-docker build -t lunetras-frontend:latest .
-```
-
-Executar container:
-
-```bash
-docker run --rm -p 4173:80 lunetras-frontend:latest
-```
