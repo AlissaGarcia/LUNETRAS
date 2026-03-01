@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lunetras-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lunetras}
+      POSTGRES_USER: ${POSTGRES_USER:-lunetras}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lunetras}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lunetras-net
+
+  backend:
+    image: ${BACKEND_IMAGE:-lunetras-backend:latest}
+    container_name: lunetras-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-lunetras}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-lunetras}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-lunetras}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+    ports:
+      - '${BACKEND_PORT:-8080}:8080'
+    networks:
+      - lunetras-net
+
+  frontend:
+    build:
+      context: ./LUNETRAS_Front
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    container_name: lunetras-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '${FRONTEND_PORT:-4173}:80'
+    networks:
+      - lunetras-net
+
+volumes:
+  postgres_data:
+
+networks:
+  lunetras-net:
+    driver: bridge
