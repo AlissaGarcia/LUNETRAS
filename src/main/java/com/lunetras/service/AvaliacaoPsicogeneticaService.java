@@ -1,53 +1,59 @@
 package com.lunetras.service;
 
+
 import com.lunetras.model.AvaliacaoPsicogenetica;
+import com.lunetras.model.Aluno;
 import com.lunetras.repository.AvaliacaoPsicogeneticaRepository;
+import com.lunetras.repository.AlunoRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public class AvaliacaoPsicogeneticaService {
 
     private final AvaliacaoPsicogeneticaRepository avaliacaoPsicogeneticaRepository;
+    private final AlunoRepository alunoRepository;
 
-    //injeção dependências pelo Spring
     public AvaliacaoPsicogeneticaService(
-            AvaliacaoPsicogeneticaRepository avaliacaoPsicogeneticaRepository) {
-
+            AvaliacaoPsicogeneticaRepository avaliacaoPsicogeneticaRepository,
+            AlunoRepository alunoRepository) {
         this.avaliacaoPsicogeneticaRepository = avaliacaoPsicogeneticaRepository;
+        this.alunoRepository = alunoRepository;
     }
 
-    public AvaliacaoPsicogenetica criarAvaliacao(AvaliacaoPsicogenetica avaliacao) {
-        validarAvaliacao(avaliacao);
+    public AvaliacaoPsicogenetica criar(AvaliacaoPsicogenetica avaliacao) {
+
+        if (avaliacao.getAluno() == null || avaliacao.getAluno().getId() == null) {
+            throw new IllegalArgumentException("Aluno é obrigatório");
+        }
+
+        if (avaliacao.getBimestre() < 1 || avaliacao.getBimestre() > 4) {
+            throw new IllegalArgumentException("O bimestre deve ser entre 1 e 4");
+        }
+
+
+
+        Aluno aluno = alunoRepository.findById(
+                avaliacao.getAluno().getId()
+                ).orElseThrow(() ->
+                new IllegalArgumentException("Aluno não encontrado.")
+        );
+
+
+
+        boolean jaExiste = avaliacaoPsicogeneticaRepository
+                .findByAlunoIdAndBimestre(
+                        avaliacao.getAluno().getId(),
+                        avaliacao.getBimestre()
+                ).isPresent();
+
+        if (jaExiste) {
+            throw new IllegalArgumentException(
+                    "O aluno já possui avaliação neste bimestre"
+            );
+        }
+        avaliacao.setAluno(aluno);
         return avaliacaoPsicogeneticaRepository.save(avaliacao);
     }
-
-    public AvaliacaoPsicogenetica buscarPorId(Long id) {
-        return avaliacaoPsicogeneticaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Avaliação não encontrada"));
-    }
-
-    public List<AvaliacaoPsicogenetica> listarTodas() {
-        return avaliacaoPsicogeneticaRepository.findAll();
-    }
-    private void validarAvaliacao(AvaliacaoPsicogenetica avaliacao) {
-
-        if(avaliacao == null) {
-            throw new IllegalArgumentException("A avaliação não pode ser nula");
-        }
-        if (avaliacao.getBimestre() == null) {
-            throw new IllegalArgumentException("Bimestre é obrigatório");
-        }
-
-        if (avaliacao.getNivel() == null) {
-            throw new IllegalArgumentException("Nível psicogenético é obrigatório");
-        }
-
-        if (avaliacao.getDataAvaliacao() == null) {
-            throw new IllegalArgumentException("Data da avaliação é obrigatória");
-        }
-    }
-
-    }
+}
 

@@ -1,55 +1,51 @@
 package com.lunetras.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+
 
 @Entity
+@Table(name = "avaliacoes_psicogeneticas")
 public class AvaliacaoPsicogenetica {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Aluno aluno;
+
+    //1 a 4
+    @Column(nullable = false)
+    private Integer bimestre;
 
     @Enumerated(EnumType.STRING)
-    private Bimestre bimestre;
-
-    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private NivelPsicogenetico nivel;
 
-    private LocalDate dataAvaliacao;
+    @Column(columnDefinition = "TEXT")
     private String observacoes;
+
+    @ManyToOne
+    @JoinColumn(name = "aluno_id", nullable = false)
+    private Aluno aluno;
 
     public AvaliacaoPsicogenetica() {
     }
 
-    public AvaliacaoPsicogenetica(
-            Aluno aluno,
-            Bimestre bimestre,
-            NivelPsicogenetico nivel,
-            LocalDate dataAvaliacao,
-            String observacoes
-    ) {
-        this.aluno = aluno;
+    public AvaliacaoPsicogenetica(Integer bimestre,
+                                  NivelPsicogenetico nivel,
+                                  String observacoes,
+                                  Aluno aluno) {
         this.bimestre = bimestre;
         this.nivel = nivel;
-        this.dataAvaliacao = dataAvaliacao;
         this.observacoes = observacoes;
+        this.aluno = aluno;
     }
+
 
     public Long getId() {
         return id;
     }
 
-    public Aluno getAluno() {
-        return aluno;
-    }
-
-    public Bimestre getBimestre() {
+    public Integer getBimestre() {
         return bimestre;
     }
 
@@ -57,31 +53,14 @@ public class AvaliacaoPsicogenetica {
         return nivel;
     }
 
-    public LocalDate getDataAvaliacao() {
-        return dataAvaliacao;
-    }
-
     public String getObservacoes() {
         return observacoes;
     }
 
+    public Aluno getAluno() {
+        return aluno;
+    }
+
     public void setAluno(Aluno aluno) {
-        this.aluno = aluno;
-    }
-
-    public void setBimestre(Bimestre bimestre) {
-        this.bimestre = bimestre;
-    }
-
-    public void setNivel(NivelPsicogenetico nivel) {
-        this.nivel = nivel;
-    }
-
-    public void setDataAvaliacao(LocalDate dataAvaliacao) {
-        this.dataAvaliacao = dataAvaliacao;
-    }
-
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
     }
 }

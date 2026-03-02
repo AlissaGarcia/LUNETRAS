@@ -1,6 +1,7 @@
 package com.lunetras.controller;
 
 import com.lunetras.dto.TurmaRequest;
+import com.lunetras.dto.TurmaResponse;
 import com.lunetras.model.Turma;
 import com.lunetras.service.TurmaService;
 import jakarta.validation.Valid;
@@ -20,10 +21,10 @@ public class TurmaController {
     }
 
     @PostMapping
-    public ResponseEntity<Turma> criar(
+    public ResponseEntity<TurmaResponse> criar(
             @RequestBody @Valid TurmaRequest request
     ) {
-        Turma turma = turmaService.criar(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(turma);
+        TurmaResponse response = turmaService.criar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

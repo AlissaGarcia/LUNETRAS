@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class AlunoService {
-
     private final AlunoRepository alunoRepository;
 
     public AlunoService(AlunoRepository alunoRepository) {
@@ -19,8 +18,6 @@ public class AlunoService {
     }
 
     public AlunoResponse criar(AlunoRequest dto) {
-        validar(dto);
-
         Aluno aluno = new Aluno();
         aluno.setNome(dto.getNome());
         aluno.setEmail(dto.getEmail());
@@ -39,29 +36,13 @@ public class AlunoService {
 
     public AlunoResponse buscarPorId(Long id) {
         Aluno aluno = alunoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Aluno não encontrado"));
         return toResponse(aluno);
     }
 
     public void remover(Long id) {
-        if (!alunoRepository.existsById(id)) {
-            throw new RuntimeException("Aluno não encontrado");
-        }
         alunoRepository.deleteById(id);
-    }
-
-    /* =======================
-       Métodos auxiliares
-       ======================= */
-
-    private void validar(AlunoRequest dto) {
-        if (dto.getNome() == null || dto.getNome().isBlank()) {
-            throw new RuntimeException("Nome é obrigatório");
-        }
-
-        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
-            throw new RuntimeException("Email é obrigatório");
-        }
     }
 
     private AlunoResponse toResponse(Aluno aluno) {
