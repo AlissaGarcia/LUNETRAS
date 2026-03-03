@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.lunetras</groupId>
-	<artifactId>lunetras</artifactId>
+	<artifactId>lunetras-BACKEND</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>lunetras</name>
 	<description>Sistema LUNETRAS</description>
