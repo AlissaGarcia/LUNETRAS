@@ -207,7 +207,7 @@ Para evitar dependência de caminhos locais de Java (ex.: `java.home` no VS Code
 ### Arquivos adicionados
 
 - `docker-compose.yml`: sobe banco PostgreSQL, back-end e front-end.
-- `Dockerfile.backend`: imagem padrão para API Spring Boot (Java 17 + Maven).
+- `Dockerfile`: imagem padrão para API Spring Boot (Java 17 + Maven).
 - `LUNETRAS_Front/Dockerfile`: build do React/Vite e publicação via Nginx.
 - `.env.docker.example`: variáveis de ambiente de referência.
 
@@ -223,12 +223,12 @@ Back-end: `http://localhost:8080`
 
 ### 2) Build da imagem do back-end
 
-No repositório do back-end (Spring Boot), use o `Dockerfile.backend` como base:
+No repositório do back-end (Spring Boot), use o `Dockerfile` como base:
 
 ```bash
-docker build -f Dockerfile.backend -t lunetras-backend:latest .
+docker build -t lunetras-backend:latest .
 ```
 
 Depois, volte a este repositório e rode o `docker compose up -d`.
 
-> Observação: o serviço `backend` no compose usa a imagem `lunetras-backend:latest` por padrão (configurável em `BACKEND_IMAGE`).
+> Observação: o serviço `backend` no compose faz build local usando o `Dockerfile` na raiz do repositório.
