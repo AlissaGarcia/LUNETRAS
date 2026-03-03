@@ -1,0 +1,239 @@
+﻿.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(255, 255, 255, 0.65) 0 54px, transparent 55px),
+    radial-gradient(circle at 92% 24%, rgba(255, 255, 255, 0.55) 0 44px, transparent 45px),
+    radial-gradient(circle at 22% 92%, rgba(255, 255, 255, 0.58) 0 48px, transparent 49px),
+    linear-gradient(180deg, #eaf4ff 0%, #dfeefe 100%);
+}
+
+.loginShell {
+  width: min(1000px, 100%);
+  min-height: min(640px, calc(100vh - 48px));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 24px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 20px 50px rgba(70, 110, 165, 0.18);
+}
+
+.visualPanel {
+  background-color: #f6f8ff;
+  background-image: url('/Fundo-login.png');
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: left center;
+}
+
+.formPanel {
+  padding: clamp(28px, 4vw, 42px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #242c3b;
+}
+
+.formPanel h1 {
+  margin: 0;
+  font-size: clamp(2rem, 2.2vw, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.lead {
+  margin: 0 0 8px;
+  color: #768197;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.formPanel label {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: #2a3141;
+}
+
+.formPanel input {
+  height: 46px;
+  width: 100%;
+  border: 1px solid #d7deed;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 0.95rem;
+  color: #20283a;
+  background-color: #f8fbff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formPanel input::placeholder {
+  color: #a3afc6;
+}
+
+.formPanel input:focus {
+  outline: none;
+  border-color: #5f8df0;
+  box-shadow: 0 0 0 3px rgba(96, 141, 240, 0.2);
+}
+
+.passwordLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.togglePassword {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #5e8ef0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.passwordField {
+  position: relative;
+}
+
+.passwordField input {
+  padding-right: 40px;
+}
+
+.eyeIcon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa8c2;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.submitButton {
+  height: 48px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #5f8def 0%, #5381e2 100%);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 12px 20px rgba(84, 129, 226, 0.22);
+}
+
+.submitButton:hover {
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.78;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.forgotPassword {
+  margin-top: 2px;
+  text-align: center;
+  color: #5f8def;
+  font-size: 0.9rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.divider {
+  margin-top: 2px;
+  border-top: 1px solid #ebf0f7;
+}
+
+.rememberRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7c889f;
+  font-size: 0.92rem;
+}
+
+.rememberRow input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #5b89ea;
+}
+
+.helperText {
+  margin: -4px 0 0;
+  color: #97a1b6;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.successMessage,
+.errorMessage {
+  margin: 2px 0;
+  font-size: 0.87rem;
+  line-height: 1.4;
+}
+
+.successMessage {
+  color: #1d8348;
+}
+
+.errorMessage {
+  color: #c0392b;
+}
+
+.brandCredit {
+  position: fixed;
+  right: clamp(12px, 1.8vw, 26px);
+  bottom: clamp(10px, 2.2vh, 22px);
+  width: min(320px, 30vw);
+  opacity: 0.95;
+  pointer-events: none;
+  z-index: 4;
+}
+
+@media (max-width: 920px) {
+  .loginShell {
+    min-height: min(760px, calc(100vh - 40px));
+    grid-template-columns: 1fr;
+  }
+
+  .visualPanel {
+    min-height: 220px;
+    background-size: 118% auto;
+    background-position: center 22%;
+  }
+
+  .brandCredit {
+    width: min(230px, 50vw);
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding: 14px;
+  }
+
+  .formPanel {
+    padding: 24px 18px;
+  }
+
+  .formPanel h1 {
+    font-size: 1.8rem;
+  }
+
+  .brandCredit {
+    width: min(180px, 48vw);
+    right: 10px;
+    bottom: 10px;
+  }
+}
