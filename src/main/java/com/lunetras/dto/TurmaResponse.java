@@ -31,6 +31,9 @@ public class TurmaResponse {
     public void setAno(Integer ano) {
         this.ano = ano;
     }
+
+    public void setProfessorNome(String professorNome) {
+    }
 }
 
 

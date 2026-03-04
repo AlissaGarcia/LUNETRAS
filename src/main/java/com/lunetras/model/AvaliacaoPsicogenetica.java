@@ -1,6 +1,7 @@
 package com.lunetras.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 
 @Entity
@@ -23,9 +24,22 @@ public class AvaliacaoPsicogenetica {
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
+    // data da avaliacao
+    @Column(nullable = false)
+    private LocalDate dataAvaliacao;
+
+    // periodo letivo (2026)
+    @Column(nullable = false)
+    private Integer periodoLetivo;
+
     @ManyToOne
     @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno aluno;
+
+    // professor responsavel
+    @ManyToOne
+    @JoinColumn(name = "professor_id", nullable = false)
+    private Usuario professor;
 
     public AvaliacaoPsicogenetica() {
     }
@@ -33,11 +47,17 @@ public class AvaliacaoPsicogenetica {
     public AvaliacaoPsicogenetica(Integer bimestre,
                                   NivelPsicogenetico nivel,
                                   String observacoes,
-                                  Aluno aluno) {
+                                  LocalDate dataAvaliacao,
+                                  Integer periodoLetivo,
+                                  Aluno aluno,
+                                  Usuario professor) {
         this.bimestre = bimestre;
         this.nivel = nivel;
         this.observacoes = observacoes;
+        this.dataAvaliacao = dataAvaliacao;
+        this.periodoLetivo = periodoLetivo;
         this.aluno = aluno;
+        this.professor = professor;
     }
 
 
@@ -57,10 +77,34 @@ public class AvaliacaoPsicogenetica {
         return observacoes;
     }
 
+    public LocalDate getDataAvaliacao() {
+        return dataAvaliacao;
+    }
+
+    public Integer getPeriodoLetivo() {
+        return periodoLetivo;
+    }
+
     public Aluno getAluno() {
         return aluno;
     }
+    public Usuario getProfessor() {
+        return professor;
+    }
 
     public void setAluno(Aluno aluno) {
+        this.aluno = aluno;
+    }
+
+    public void setProfessor(Usuario professor) {
+        this.professor = professor;
+    }
+
+    public void setDataAvaliacao(LocalDate dataAvaliacao) {
+        this.dataAvaliacao = dataAvaliacao;
+    }
+
+    public void setPeriodoLetivo(Integer periodoLetivo) {
+        this.periodoLetivo = periodoLetivo;
     }
 }

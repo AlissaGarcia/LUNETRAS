@@ -35,4 +35,8 @@ public class TurmaRequest {
     public void setTurno(String turno) {
         this.turno = turno;
     }
+
+    public Long getProfessorId() {
+        return null;
+    }
 }
