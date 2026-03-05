@@ -8,17 +8,32 @@ import type { CreateClassInput } from './pages/admin/types';
 import { Login } from './pages/login/Login';
 
 type AdminView = 'DASHBOARD' | 'CLASS_STUDENTS';
+const LITERACY_STAGE_ORDER: LiteracyStage[] = [
+  'SEM_DADOS',
+  'ICONICA',
+  'GARATUJA',
+  'PRE_SILABICO',
+  'SILABICO_SEM_VALOR_SONORO',
+  'SILABICO_COM_VALOR_SONORO',
+  'ALFABETICO',
+  'ORTOGRAFICO',
+];
 
 function statusByLevel(level: LiteracyStage) {
-  if (level === 'ICONICO' || level === 'GARATUJA' || level === 'PRE_SILABICO') {
-    return 'NEEDS_ATTENTION' as const;
-  }
-
-  if (level === 'SILABICO') {
+  if (level === 'SEM_DADOS') {
     return 'PENDING' as const;
   }
 
-  if (level === 'SILABICO_ALFABETICO') {
+  if (
+    level === 'ICONICA' ||
+    level === 'GARATUJA' ||
+    level === 'PRE_SILABICO' ||
+    level === 'SILABICO_SEM_VALOR_SONORO'
+  ) {
+    return 'NEEDS_ATTENTION' as const;
+  }
+
+  if (level === 'SILABICO_COM_VALOR_SONORO') {
     return 'MONITORING' as const;
   }
 
@@ -72,6 +87,60 @@ function App() {
   const selectedClass = useMemo(
     () => classesWithDerivedMetrics.find((classRoom) => classRoom.id === selectedClassId) ?? classesWithDerivedMetrics[0],
     [classesWithDerivedMetrics, selectedClassId],
+  );
+
+  const levelDistribution = useMemo(() => {
+    const activeClassIds = new Set(classesWithDerivedMetrics.filter((item) => item.ativa).map((item) => item.id));
+    const allStudents = Object.entries(studentsByClass)
+      .filter(([classId]) => activeClassIds.has(classId))
+      .flatMap(([, students]) => students);
+
+    const total = allStudents.length;
+    const counts = LITERACY_STAGE_ORDER.reduce(
+      (acc, stage) => ({ ...acc, [stage]: 0 }),
+      {} as Record<LiteracyStage, number>,
+    );
+
+    allStudents.forEach((student) => {
+      if (student.nivel in counts) {
+        counts[student.nivel] += 1;
+      }
+    });
+
+    return LITERACY_STAGE_ORDER.map((stage) => ({
+      stage,
+      count: counts[stage],
+      percent: total > 0 ? Math.round((counts[stage] / total) * 100) : 0,
+    }));
+  }, [classesWithDerivedMetrics, studentsByClass]);
+
+  const classLevelDistribution = useMemo(
+    () =>
+      classesWithDerivedMetrics.map((classRoom) => {
+        const students = studentsByClass[classRoom.id] ?? [];
+        const total = students.length;
+        const counts = LITERACY_STAGE_ORDER.reduce(
+          (acc, stage) => ({ ...acc, [stage]: 0 }),
+          {} as Record<LiteracyStage, number>,
+        );
+
+        students.forEach((student) => {
+          if (student.nivel in counts) {
+            counts[student.nivel] += 1;
+          }
+        });
+
+        return {
+          classId: classRoom.id,
+          total,
+          levels: LITERACY_STAGE_ORDER.map((stage) => ({
+            stage,
+            count: counts[stage],
+            percent: total > 0 ? Math.round((counts[stage] / total) * 100) : 0,
+          })),
+        };
+      }),
+    [classesWithDerivedMetrics, studentsByClass],
   );
 
   function handleAuthSuccess() {
@@ -236,6 +305,8 @@ function App() {
       userName={userName}
       onLogout={handleLogout}
       classes={classesWithDerivedMetrics}
+      levelDistribution={levelDistribution}
+      classLevelDistribution={classLevelDistribution}
       onRemoveClass={handleRemoveClass}
       onOpenClass={handleOpenClass}
       onGoToClasses={handleGoToClasses}

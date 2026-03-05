@@ -1,11 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import styles from './AdminDashboard.module.css';
-import { calculateClassProgress, calculateSummary, resolveLiteracyStage, stageLabel, type ClassRoom } from './metrics';
+import { calculateSummary, stageLabel, type ClassRoom, type LiteracyStage } from './metrics';
+
+interface LevelDistributionItem {
+  stage: LiteracyStage;
+  count: number;
+  percent: number;
+}
+
+interface ClassLevelDistributionItem {
+  classId: string;
+  total: number;
+  levels: LevelDistributionItem[];
+}
 
 interface AdminDashboardProps {
   userName: string;
   onLogout: () => void;
   classes: ClassRoom[];
+  levelDistribution: LevelDistributionItem[];
+  classLevelDistribution: ClassLevelDistributionItem[];
   onRemoveClass: (classId: string) => void;
   onOpenClass: (classId: string) => void;
   onGoToClasses: () => void;
@@ -19,41 +33,12 @@ function todayLabel() {
   });
 }
 
-function mixHexColor(colorA: string, colorB: string, weight: number) {
-  const safeWeight = Math.max(0, Math.min(1, weight));
-  const parse = (value: string) => parseInt(value, 16);
-  const aR = parse(colorA.slice(1, 3));
-  const aG = parse(colorA.slice(3, 5));
-  const aB = parse(colorA.slice(5, 7));
-  const bR = parse(colorB.slice(1, 3));
-  const bG = parse(colorB.slice(3, 5));
-  const bB = parse(colorB.slice(5, 7));
-
-  const toHex = (value: number) => Math.round(value).toString(16).padStart(2, '0');
-  const r = aR + (bR - aR) * safeWeight;
-  const g = aG + (bG - aG) * safeWeight;
-  const b = aB + (bB - aB) * safeWeight;
-
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-function resolveProgressColor(progress: number) {
-  const clamped = Math.max(0, Math.min(100, progress));
-  const lowColor = '#e55656';
-  const mediumColor = '#e6a63f';
-  const highColor = '#37c977';
-
-  if (clamped <= 50) {
-    return mixHexColor(lowColor, mediumColor, clamped / 50);
-  }
-
-  return mixHexColor(mediumColor, highColor, (clamped - 50) / 50);
-}
-
 export function AdminDashboard({
   userName,
   onLogout,
   classes,
+  levelDistribution,
+  classLevelDistribution,
   onRemoveClass,
   onOpenClass,
   onGoToClasses,
@@ -61,14 +46,13 @@ export function AdminDashboard({
   const [animationProgress, setAnimationProgress] = useState(0);
 
   const summary = useMemo(() => calculateSummary(classes), [classes]);
-  const animatedSummaryProgress = Math.round(summary.percentualAlfabetizacao * animationProgress);
   const pendingTasks = useMemo(
     () =>
       classes
         .filter((item) => item.pendencias > 0)
         .map((item) => ({
           id: item.id,
-          text: `Corrigir ${item.pendencias} avaliacoes da turma ${item.nome}`,
+          text: `Corrigir ${item.pendencias} avaliações da turma ${item.nome}`,
           urgency: item.pendencias >= 4 ? 'URGENTE' : 'NORMAL',
         })),
     [classes],
@@ -141,21 +125,23 @@ export function AdminDashboard({
             <p className={styles.kpiValue}>{summary.totalAlunos}</p>
             <p className={styles.kpiLabel}>Total de Alunos</p>
           </article>
-          <article className={styles.kpiCard}>
-            <div>
-              <p className={styles.kpiLabel}>Nivel Geral</p>
-              <p className={styles.kpiStage} style={{ color: resolveProgressColor(animatedSummaryProgress) }}>
-                {stageLabel(resolveLiteracyStage(animatedSummaryProgress))}
-              </p>
+          <article className={`${styles.kpiCard} ${styles.chartCard}`}>
+            <div className={styles.chartHeader}>
+              <p className={styles.kpiLabel}>Distribuição geral por nível de escrita</p>
             </div>
-            <div
-              className={styles.ring}
-              style={{
-                ['--progress' as string]: `${animatedSummaryProgress}`,
-                ['--tone-color' as string]: resolveProgressColor(animatedSummaryProgress),
-              }}
-            >
-              <span>{animatedSummaryProgress}%</span>
+            <div className={styles.towerChart}>
+              {levelDistribution.map((item) => (
+                <div key={item.stage} className={styles.towerItem}>
+                  <span className={styles.towerValue}>{Math.round(item.percent * animationProgress)}%</span>
+                  <div className={styles.towerTrack}>
+                    <div
+                      className={styles.towerFill}
+                      style={{ height: `${Math.max(4, item.percent * animationProgress)}%` }}
+                    />
+                  </div>
+                  <small className={styles.towerLabel}>{stageLabel(item.stage)}</small>
+                </div>
+              ))}
             </div>
           </article>
         </section>
@@ -169,29 +155,31 @@ export function AdminDashboard({
 
             <div className={styles.classList}>
               {classes.map((item) => {
-                const classProgress = Math.round(calculateClassProgress(item) * animationProgress);
-                const literacyStage = resolveLiteracyStage(classProgress);
-                const classColor = resolveProgressColor(classProgress);
+                const classData = classLevelDistribution.find((entry) => entry.classId === item.id);
+                const classLevels = classData?.levels ?? [];
 
                 return (
                   <article key={item.id} className={styles.classCard}>
                     <header>
                       <strong>{item.nome}</strong>
-                      <span>{classProgress}%</span>
+                      <span>{classData?.total ?? 0} alunos</span>
                     </header>
-                    <p style={{ color: classColor }}>{stageLabel(literacyStage)}</p>
-                    <div className={styles.progressTrack}>
-                      <div
-                        className={styles.progressFill}
-                        style={{
-                          width: `${classProgress}%`,
-                          ['--bar-color' as string]: classColor,
-                        }}
-                      />
+
+                    <div className={styles.classCategoryList}>
+                      {classLevels.map((level) => (
+                        <div key={`${item.id}-${level.stage}`} className={styles.classCategoryRow}>
+                          <small>{stageLabel(level.stage)}</small>
+                          <span>{Math.round(level.percent * animationProgress)}%</span>
+                          <div className={styles.progressTrack}>
+                            <div
+                              className={styles.progressFill}
+                              style={{ width: `${Math.max(0, level.percent * animationProgress)}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <small>
-                      Índice médio de escrita da turma: {classProgress}%
-                    </small>
+
                     <div className={styles.classActions}>
                       <button type="button" className={styles.openClassButton} onClick={() => onOpenClass(item.id)}>
                         Ver turma
@@ -208,13 +196,13 @@ export function AdminDashboard({
 
           <article className={`${styles.block} ${styles.pendingBlock}`}>
             <div className={styles.blockHeader}>
-              <h3>Pendencias</h3>
+              <h3>Pendências</h3>
               <span>{pendingTasks.length} itens</span>
             </div>
 
             <ul className={styles.pendingList}>
               {pendingTasks.length === 0 ? (
-                <li className={styles.empty}>Sem pendencias no momento.</li>
+                <li className={styles.empty}>Sem pendências no momento.</li>
               ) : (
                 pendingTasks.map((task) => (
                   <li key={task.id}>

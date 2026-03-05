@@ -25,6 +25,17 @@ interface AdminClassStudentsPageProps {
 
 type FilterMode = 'ALL' | 'PENDING' | 'EVALUATED';
 
+const WRITING_LEVEL_OPTIONS: LiteracyStage[] = [
+  'SEM_DADOS',
+  'ICONICA',
+  'GARATUJA',
+  'PRE_SILABICO',
+  'SILABICO_SEM_VALOR_SONORO',
+  'SILABICO_COM_VALOR_SONORO',
+  'ALFABETICO',
+  'ORTOGRAFICO',
+];
+
 function formatBirthDate(value: string) {
   const [year, month, day] = value.split('-');
   return `${day}/${month}/${year}`;
@@ -67,14 +78,13 @@ export function AdminClassStudentsPage({
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isStudentDetailsModalOpen, setIsStudentDetailsModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const [selectedStudentLevel, setSelectedStudentLevel] = useState<LiteracyStage>('SILABICO');
+  const [selectedStudentLevel, setSelectedStudentLevel] = useState<LiteracyStage>('SEM_DADOS');
   const [selectedStudentStatus, setSelectedStudentStatus] = useState<StudentStatus>('PENDING');
   const [selectedStudentNotes, setSelectedStudentNotes] = useState('');
 
   const [newClassName, setNewClassName] = useState('');
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentBirthDate, setNewStudentBirthDate] = useState('');
-  const [newStudentLevel, setNewStudentLevel] = useState<LiteracyStage>('SILABICO');
 
   const visibleStudents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -124,12 +134,11 @@ export function AdminClassStudentsPage({
     onAddStudentToClass(classRoom.id, {
       nome: newStudentName.trim(),
       dataNascimento: newStudentBirthDate,
-      nivel: newStudentLevel,
+      nivel: 'SEM_DADOS',
     });
 
     setNewStudentName('');
     setNewStudentBirthDate('');
-    setNewStudentLevel('SILABICO');
     setIsAddStudentModalOpen(false);
   }
 
@@ -218,9 +227,9 @@ export function AdminClassStudentsPage({
 
             <div className={styles.actions}>
               <button type="button" className={styles.primaryAction}>
-                + Nova Avaliacao
+                + Nova Avaliação
               </button>
-                <button type="button" className={styles.secondaryAction}>
+              <button type="button" className={styles.secondaryAction}>
                 Gerar Relatório
               </button>
               <button
@@ -258,7 +267,7 @@ export function AdminClassStudentsPage({
             <div className={styles.tableHeader}>
               <span>Aluno</span>
               <span>Data de Nascimento</span>
-              <span>Nível de Escrita</span>
+              <span>Nível de escrita</span>
               <span>Status</span>
             </div>
 
@@ -289,9 +298,7 @@ export function AdminClassStudentsPage({
               );
             })}
 
-            {visibleStudents.length === 0 ? (
-              <p className={styles.empty}>Nenhum aluno encontrado para esse filtro.</p>
-            ) : null}
+            {visibleStudents.length === 0 ? <p className={styles.empty}>Nenhum aluno encontrado para esse filtro.</p> : null}
           </section>
         </div>
 
@@ -355,17 +362,7 @@ export function AdminClassStudentsPage({
                     onChange={(event) => setNewStudentBirthDate(event.target.value)}
                   />
                 </label>
-                <label>
-                  Nível de escrita
-                  <select value={newStudentLevel} onChange={(event) => setNewStudentLevel(event.target.value as LiteracyStage)}>
-                    <option value="ICONICO">Icônico</option>
-                    <option value="GARATUJA">Garatuja</option>
-                    <option value="PRE_SILABICO">Pré-silábico</option>
-                    <option value="SILABICO">Silábico</option>
-                    <option value="SILABICO_ALFABETICO">Silábico-Alfabético</option>
-                    <option value="ALFABETICO">Alfabético</option>
-                  </select>
-                </label>
+                <p>O nível de escrita inicial será salvo como "Sem dados".</p>
               </div>
 
               <footer className={styles.modalFooter}>
@@ -384,7 +381,7 @@ export function AdminClassStudentsPage({
           <div className={styles.modalOverlay} onClick={() => setIsStudentDetailsModalOpen(false)}>
             <article className={`${styles.modalCard} ${styles.studentDetailsModal}`} onClick={(event) => event.stopPropagation()}>
               <header className={styles.modalHeader}>
-                <h2>Nova Avaliacao</h2>
+                <h2>Nova Avaliação</h2>
                 <button type="button" onClick={() => setIsStudentDetailsModalOpen(false)}>
                   X
                 </button>
@@ -401,11 +398,9 @@ export function AdminClassStudentsPage({
               </section>
 
               <section className={styles.levelSection}>
-                <h3>Nível de Escrita</h3>
+                <h3>Nível de escrita</h3>
                 <div className={styles.levelOptions}>
-                  {(
-                    ['ICONICO', 'GARATUJA', 'PRE_SILABICO', 'SILABICO', 'SILABICO_ALFABETICO', 'ALFABETICO'] as LiteracyStage[]
-                  ).map((level) => (
+                  {WRITING_LEVEL_OPTIONS.map((level) => (
                     <button
                       key={level}
                       type="button"
@@ -434,7 +429,7 @@ export function AdminClassStudentsPage({
               </section>
 
               <section className={styles.notesSection}>
-                <h3>Adicionar Observações</h3>
+                <h3>Adicionar observações</h3>
                 <textarea
                   value={selectedStudentNotes}
                   onChange={(event) => setSelectedStudentNotes(event.target.value)}

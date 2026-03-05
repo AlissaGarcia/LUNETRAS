@@ -1,10 +1,12 @@
-﻿export type LiteracyStage =
-  | 'ICONICO'
+export type LiteracyStage =
+  | 'SEM_DADOS'
+  | 'ICONICA'
   | 'GARATUJA'
   | 'PRE_SILABICO'
-  | 'SILABICO'
-  | 'SILABICO_ALFABETICO'
-  | 'ALFABETICO';
+  | 'SILABICO_SEM_VALOR_SONORO'
+  | 'SILABICO_COM_VALOR_SONORO'
+  | 'ALFABETICO'
+  | 'ORTOGRAFICO';
 
 export interface ClassRoom {
   id: string;
@@ -27,17 +29,21 @@ export type ProgressTone = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export function literacyStageFactor(stage: LiteracyStage): number {
   switch (stage) {
-    case 'ICONICO':
+    case 'SEM_DADOS':
+      return 0;
+    case 'ICONICA':
       return 0;
     case 'GARATUJA':
-      return 0.2;
+      return 0.15;
     case 'PRE_SILABICO':
-      return 0.4;
-    case 'SILABICO':
+      return 0.3;
+    case 'SILABICO_SEM_VALOR_SONORO':
+      return 0.45;
+    case 'SILABICO_COM_VALOR_SONORO':
       return 0.6;
-    case 'SILABICO_ALFABETICO':
-      return 0.8;
     case 'ALFABETICO':
+      return 0.8;
+    case 'ORTOGRAFICO':
       return 1;
     default:
       return 0;
@@ -54,26 +60,30 @@ export function calculateClassProgress(classRoom: ClassRoom): number {
 
 export function resolveLiteracyStage(progress: number): LiteracyStage {
   if (progress < 10) {
-    return 'ICONICO';
+    return 'ICONICA';
   }
 
-  if (progress < 30) {
+  if (progress < 22) {
     return 'GARATUJA';
   }
 
-  if (progress < 50) {
+  if (progress < 35) {
     return 'PRE_SILABICO';
   }
 
-  if (progress < 70) {
-    return 'SILABICO';
+  if (progress < 50) {
+    return 'SILABICO_SEM_VALOR_SONORO';
   }
 
-  if (progress < 90) {
-    return 'SILABICO_ALFABETICO';
+  if (progress < 68) {
+    return 'SILABICO_COM_VALOR_SONORO';
   }
 
-  return 'ALFABETICO';
+  if (progress < 85) {
+    return 'ALFABETICO';
+  }
+
+  return 'ORTOGRAFICO';
 }
 
 export function calculateSummary(classes: ClassRoom[]): DashboardSummary {
@@ -92,18 +102,22 @@ export function calculateSummary(classes: ClassRoom[]): DashboardSummary {
 
 export function stageLabel(stage: LiteracyStage): string {
   switch (stage) {
-    case 'ICONICO':
-      return 'Icônico';
+    case 'SEM_DADOS':
+      return 'Sem dados';
+    case 'ICONICA':
+      return 'Icônica';
     case 'GARATUJA':
       return 'Garatuja';
     case 'PRE_SILABICO':
       return 'Pré-silábico';
-    case 'SILABICO':
-      return 'Silábico';
-    case 'SILABICO_ALFABETICO':
-      return 'Silábico-Alfabético';
+    case 'SILABICO_SEM_VALOR_SONORO':
+      return 'Silábico sem valor sonoro';
+    case 'SILABICO_COM_VALOR_SONORO':
+      return 'Silábico com valor sonoro';
     case 'ALFABETICO':
       return 'Alfabético';
+    case 'ORTOGRAFICO':
+      return 'Ortográfico';
     default:
       return 'Sem dados';
   }

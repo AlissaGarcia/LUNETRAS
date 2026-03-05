@@ -154,25 +154,71 @@
   transition: color 320ms ease;
 }
 
-.ring {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
+.chartCard {
   display: grid;
-  place-items: center;
-  background: conic-gradient(var(--tone-color) calc(var(--progress) * 1%), #dfe5ef 0);
-  transition: background 320ms ease;
+  align-content: start;
+  gap: 8px;
+  min-height: 190px;
 }
 
-.ring span {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.towerChart {
+  height: 130px;
   display: grid;
-  place-items: center;
-  background-color: #ffffff;
-  color: #2b3342;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+}
+
+.towerItem {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  grid-template-rows: 18px 80px 34px;
+  align-items: end;
+}
+
+.towerValue {
+  font-size: 0.75rem;
+  color: #4f6488;
   font-weight: 700;
+  line-height: 1;
+}
+
+.towerTrack {
+  width: 100%;
+  max-width: 26px;
+  height: 80px;
+  border-radius: 8px;
+  background-color: #e9eef7;
+  border: 1px solid #d3dff2;
+  display: flex;
+  align-items: end;
+  overflow: hidden;
+}
+
+.towerFill {
+  width: 100%;
+  background: linear-gradient(180deg, #7aa4ff 0%, #4d79d8 100%);
+  border-radius: 6px;
+  transition: height 360ms ease;
+}
+
+.towerLabel {
+  text-align: center;
+  color: #6c7c96;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  min-height: 34px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 2px;
 }
 
 .grid {
@@ -237,6 +283,38 @@
   transition: color 320ms ease;
 }
 
+.classCategoryList {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.classCategoryRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 42px;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+}
+
+.classCategoryRow small {
+  color: #536483;
+  font-weight: 600;
+  margin: 0;
+}
+
+.classCategoryRow span {
+  color: #4b5d7e;
+  font-weight: 700;
+  text-align: right;
+  font-size: 0.8rem;
+}
+
+.classCategoryRow .progressTrack {
+  grid-column: 1 / -1;
+  height: 8px;
+}
+
 .progressTrack {
   height: 10px;
   border-radius: 999px;
@@ -246,7 +324,7 @@
 
 .progressFill {
   height: 100%;
-  background: var(--bar-color);
+  background: linear-gradient(90deg, #7aa4ff 0%, #4f79d9 100%);
   transition: width 320ms ease, background-color 320ms ease;
 }
 
@@ -392,8 +470,22 @@
     grid-template-columns: 1fr;
   }
 
+  .towerChart {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    height: auto;
+    row-gap: 12px;
+  }
+
   .header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .classCategoryRow {
+    grid-template-columns: 1fr;
+  }
+
+  .classCategoryRow span {
+    text-align: left;
   }
 }
