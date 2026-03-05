@@ -229,6 +229,21 @@ docker compose up -d --build
 - Back-end: `http://localhost:8080`
 - Banco PostgreSQL: `localhost:5432`
 
+### Banco inicial (schema + seed)
+
+Ao subir o `db` pela primeira vez, o PostgreSQL executa automaticamente os scripts em `LUNETRAS-BD/`:
+
+- `lunetras-bd-schema.sql`: cria tabelas, chaves estrangeiras, checks e índices alinhados às entidades do backend.
+- `lunetras-bd-seed.sql`: cria usuários e dados iniciais para desenvolvimento local.
+
+> Importante: esses scripts rodam apenas na inicialização de um volume novo do banco.
+> Para reaplicar do zero, remova o volume do PostgreSQL e suba novamente o ambiente.
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
 ### 4) Parar ambiente
 
 ```bash
