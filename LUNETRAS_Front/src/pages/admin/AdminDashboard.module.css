@@ -1,0 +1,399 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  background: linear-gradient(180deg, #e9f3ff 0%, #d8ebff 100%);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 24px 14px;
+  background-color: #f5f9ff;
+  border-right: 1px solid #d9e6fb;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #4d80e3;
+  font-weight: 700;
+}
+
+.brand img {
+  width: 40px;
+  height: 40px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav button {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background-color: transparent;
+  color: #5f6d85;
+  padding: 12px;
+  text-align: left;
+  font-size: 0.96rem;
+  cursor: pointer;
+}
+
+.nav .active {
+  background-color: #e3edff;
+  color: #4e7de2;
+  font-weight: 600;
+}
+
+.logout {
+  margin-top: auto;
+  border: 1px solid #d6e0f3;
+  border-radius: 12px;
+  background-color: #ffffff;
+  color: #5c6a82;
+  padding: 11px;
+  cursor: pointer;
+}
+
+.content {
+  padding: clamp(18px, 2vw, 26px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.7vw, 2.4rem);
+  color: #1f293b;
+}
+
+.header p {
+  margin: 5px 0 0;
+  color: #6d7a90;
+}
+
+.userBadge {
+  min-width: 220px;
+  border-radius: 28px;
+  background-color: #f5f8ff;
+  border: 1px solid #d6e5fc;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: #23324b;
+}
+
+.userBadge small {
+  color: #74839c;
+}
+
+.highlight {
+  border-radius: 18px;
+  background-color: #f6f9ff;
+  border: 1px solid #dbe7fb;
+  padding: 22px 24px;
+}
+
+.highlight h2 {
+  margin: 0;
+  color: #1f2b3d;
+}
+
+.highlight p {
+  margin: 10px 0 0;
+  color: #6d7a90;
+}
+
+.kpis {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kpiCard {
+  min-height: 122px;
+  border-radius: 18px;
+  padding: 20px;
+  background-color: #f7f9ff;
+  border: 1px solid #d9e5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpiValue {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #1f2a3d;
+}
+
+.kpiLabel {
+  margin: 6px 0 0;
+  color: #6d7b93;
+}
+
+.kpiStage {
+  margin: 6px 0 0;
+  font-weight: 700;
+  font-size: 1.2rem;
+  transition: color 320ms ease;
+}
+
+.ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--tone-color) calc(var(--progress) * 1%), #dfe5ef 0);
+  transition: background 320ms ease;
+}
+
+.ring span {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background-color: #ffffff;
+  color: #2b3342;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.block {
+  border-radius: 18px;
+  border: 1px solid #d9e5fb;
+  background-color: #f7faff;
+  padding: 16px;
+}
+
+.blockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.blockHeader h3 {
+  margin: 0;
+  color: #1f2a3d;
+}
+
+.blockHeader span {
+  color: #6284d8;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.classList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.classCard {
+  border-radius: 12px;
+  border: 1px solid #d7e4fb;
+  background-color: #ffffff;
+  padding: 11px 12px;
+}
+
+.classCard header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.classCard strong {
+  color: #1e2a3c;
+}
+
+.classCard p {
+  margin: 6px 0;
+  font-weight: 600;
+  transition: color 320ms ease;
+}
+
+.progressTrack {
+  height: 10px;
+  border-radius: 999px;
+  background-color: #ebeff6;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--bar-color);
+  transition: width 320ms ease, background-color 320ms ease;
+}
+
+.classCard small {
+  display: block;
+  margin-top: 7px;
+  color: #6e7c93;
+}
+
+.classActions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.openClassButton {
+  border: 1px solid #c9d9f8;
+  border-radius: 8px;
+  background-color: #f4f8ff;
+  color: #4874ce;
+  min-height: 32px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.removeClassButton {
+  border: 1px solid #f2c5c5;
+  border-radius: 8px;
+  background-color: #fff5f5;
+  color: #c24747;
+  min-height: 32px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.formGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.fieldLabel {
+  display: grid;
+  gap: 6px;
+  color: #4a5b77;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.formGrid input,
+.formGrid button {
+  border-radius: 10px;
+  border: 1px solid #d6e2f5;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 0.92rem;
+}
+
+.formGrid input {
+  background-color: #ffffff;
+}
+
+.formGrid button {
+  border: none;
+  background: linear-gradient(135deg, #628eea 0%, #4f79d9 100%);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pendingList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pendingList li {
+  border-radius: 10px;
+  border: 1px solid #e0e7f5;
+  background-color: #ffffff;
+  padding: 10px 12px;
+  color: #40506a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.pendingList strong {
+  color: #d99007;
+  font-size: 0.75rem;
+  border-radius: 8px;
+  background-color: #fff4dd;
+  padding: 2px 8px;
+}
+
+.empty {
+  justify-content: center;
+  color: #7d8ca4;
+}
+
+.pendingBlock {
+  background: linear-gradient(180deg, #eff3f9 0%, #e6edf6 100%);
+  border-color: #cdd8ea;
+}
+
+.pendingBlock .blockHeader h3 {
+  color: #1d2a40;
+}
+
+.pendingBlock .blockHeader span {
+  color: #4668b8;
+}
+
+.pendingBlock .pendingList li {
+  background-color: #f8fbff;
+  border-color: #d3ddee;
+}
+
+@media (max-width: 1120px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #d9e6fb;
+  }
+
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

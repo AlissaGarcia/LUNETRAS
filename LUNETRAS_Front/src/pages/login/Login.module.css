@@ -129,6 +129,18 @@
   box-shadow: 0 12px 20px rgba(84, 129, 226, 0.22);
 }
 
+.devButton {
+  height: 42px;
+  margin-top: 2px;
+  border: 1px solid #c9d9f8;
+  border-radius: 10px;
+  background-color: #f4f8ff;
+  color: #4d77cf;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .submitButton:hover {
   transform: translateY(-1px);
 }
