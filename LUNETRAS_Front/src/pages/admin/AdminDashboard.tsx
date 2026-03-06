@@ -23,6 +23,7 @@ interface AdminDashboardProps {
   onRemoveClass: (classId: string) => void;
   onOpenClass: (classId: string) => void;
   onGoToClasses: () => void;
+  onGoToReports: () => void;
 }
 
 function todayLabel() {
@@ -42,6 +43,7 @@ export function AdminDashboard({
   onRemoveClass,
   onOpenClass,
   onGoToClasses,
+  onGoToReports,
 }: AdminDashboardProps) {
   const [animationProgress, setAnimationProgress] = useState(0);
 
@@ -89,7 +91,7 @@ export function AdminDashboard({
         <nav className={styles.nav}>
           <button className={styles.active}>Painel</button>
           <button onClick={onGoToClasses}>Minhas Turmas</button>
-          <button>Relatórios</button>
+          <button onClick={onGoToReports}>Relatórios</button>
         </nav>
 
         <button className={styles.logout} onClick={onLogout}>

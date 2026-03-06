@@ -2,12 +2,13 @@ import './App.css';
 import { useMemo, useState } from 'react';
 import { AdminClassStudentsPage } from './pages/admin/AdminClassStudentsPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminReportsPage } from './pages/admin/AdminReportsPage';
 import { literacyStageFactor, type ClassRoom, type LiteracyStage } from './pages/admin/metrics';
 import { INITIAL_CLASSES, INITIAL_STUDENTS_BY_CLASS, buildStudentsForNewClass, type Student } from './pages/admin/mockData';
 import type { CreateClassInput } from './pages/admin/types';
 import { Login } from './pages/login/Login';
 
-type AdminView = 'DASHBOARD' | 'CLASS_STUDENTS';
+type AdminView = 'DASHBOARD' | 'CLASS_STUDENTS' | 'REPORTS';
 const LITERACY_STAGE_ORDER: LiteracyStage[] = [
   'SEM_DADOS',
   'ICONICA',
@@ -277,6 +278,10 @@ function App() {
     setAdminView('DASHBOARD');
   }
 
+  function handleGoToReports() {
+    setAdminView('REPORTS');
+  }
+
   if (!token) {
     return <Login onLoginSuccess={handleAuthSuccess} />;
   }
@@ -295,6 +300,20 @@ function App() {
         onRemoveClass={handleRemoveClass}
         onRemoveStudentFromClass={handleRemoveStudentFromClass}
         onBackToDashboard={handleBackToDashboard}
+        onGoToReports={handleGoToReports}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  if (adminView === 'REPORTS') {
+    return (
+      <AdminReportsPage
+        userName={userName}
+        classes={classesWithDerivedMetrics}
+        studentsByClass={studentsByClass}
+        onBackToDashboard={handleBackToDashboard}
+        onGoToClasses={handleGoToClasses}
         onLogout={handleLogout}
       />
     );
@@ -310,6 +329,7 @@ function App() {
       onRemoveClass={handleRemoveClass}
       onOpenClass={handleOpenClass}
       onGoToClasses={handleGoToClasses}
+      onGoToReports={handleGoToReports}
     />
   );
 }

@@ -20,6 +20,7 @@ interface AdminClassStudentsPageProps {
   onRemoveClass: (classId: string) => void;
   onRemoveStudentFromClass: (classId: string, studentId: string) => void;
   onBackToDashboard: () => void;
+  onGoToReports: () => void;
   onLogout: () => void;
 }
 
@@ -70,6 +71,7 @@ export function AdminClassStudentsPage({
   onRemoveClass,
   onRemoveStudentFromClass,
   onBackToDashboard,
+  onGoToReports,
   onLogout,
 }: AdminClassStudentsPageProps) {
   const [search, setSearch] = useState('');
@@ -188,7 +190,7 @@ export function AdminClassStudentsPage({
         <nav className={styles.nav}>
           <button onClick={onBackToDashboard}>Painel</button>
           <button className={styles.active}>Minhas Turmas</button>
-          <button>Relatórios</button>
+          <button onClick={onGoToReports}>Relatórios</button>
         </nav>
 
         <button className={styles.logout} onClick={onLogout}>
@@ -229,7 +231,7 @@ export function AdminClassStudentsPage({
               <button type="button" className={styles.primaryAction}>
                 + Nova Avaliação
               </button>
-              <button type="button" className={styles.secondaryAction}>
+              <button type="button" className={styles.secondaryAction} onClick={onGoToReports}>
                 Gerar Relatório
               </button>
               <button
