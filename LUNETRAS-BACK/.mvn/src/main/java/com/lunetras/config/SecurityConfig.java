@@ -6,6 +6,8 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -14,9 +16,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final UsuarioDetailsService usuarioDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(UsuarioDetailsService usuarioDetailsService) {
+    public SecurityConfig(UsuarioDetailsService usuarioDetailsService,
+                          PasswordEncoder passwordEncoder)  {
         this.usuarioDetailsService = usuarioDetailsService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -28,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .userDetailsService(usuarioDetailsService)
                 .formLogin(form -> form
                         .loginProcessingUrl("/auth/login")
                 )
@@ -36,5 +42,11 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration
+    ) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

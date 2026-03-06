@@ -44,9 +44,6 @@ public class Usuario implements UserDetails {
     )
     private Set<Turma> turmas;
 
-    // =========================
-    // MÉTODOS DO SPRING SECURITY
-    // =========================
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

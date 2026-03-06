@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
-    // RF003 - Logout seguro
+
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
 
