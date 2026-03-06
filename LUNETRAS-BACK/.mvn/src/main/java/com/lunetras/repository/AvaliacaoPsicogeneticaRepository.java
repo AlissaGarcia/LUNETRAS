@@ -13,16 +13,12 @@ import java.util.Optional;
 public interface AvaliacaoPsicogeneticaRepository
         extends JpaRepository<AvaliacaoPsicogenetica, Long> {
 
-    Optional<AvaliacaoPsicogenetica>
-    findByAlunoIdAndBimestreAndPeriodoLetivo(Long alunoId, Integer bimestre, Integer periodoLetivo);
+    Optional<AvaliacaoPsicogenetica> findByAlunoIdAndBimestreAndPeriodoLetivo(Long alunoId, Integer bimestre, Integer periodoLetivo);
 
-
-    List<AvaliacaoPsicogenetica>
-    findByAlunoTurmaIdAndBimestre(Long turmaId, Integer bimestre, Integer periodoLetivo);
-
+    List<AvaliacaoPsicogenetica> findByAluno_Turma_IdAndBimestreAndPeriodoLetivo(Long turmaId, Integer bimestre, Integer periodoLetivo);
 
     @Query("""
-          SELECT new com.lunetras.dto.EstatisticaNivel(a.nivel, COUNT(a))
+        SELECT new com.lunetras.dto.EstatisticaNivel(a.nivel, COUNT(a))
         FROM AvaliacaoPsicogenetica a
         WHERE a.aluno.turma.id = :turmaId
         AND a.bimestre = :bimestre
@@ -30,5 +26,4 @@ public interface AvaliacaoPsicogeneticaRepository
         GROUP BY a.nivel
     """)
     List<EstatisticaNivel> contarPorNivel(Long turmaId, Integer bimestre, Integer periodoLetivo);
-
 }
