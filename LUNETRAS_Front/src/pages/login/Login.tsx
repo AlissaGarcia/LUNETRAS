@@ -4,7 +4,13 @@ import { ApiError } from '../../services/api';
 import { login } from '../../services/auth';
 import styles from './Login.module.css';
 
-export function Login() {
+interface LoginProps {
+  onLoginSuccess?: () => void;
+}
+
+const DEV_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_LOGIN !== 'false';
+
+export function Login({ onLoginSuccess }: LoginProps) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,6 +38,7 @@ export function Login() {
 
       setIsError(false);
       setMessage(`Login realizado com sucesso. Bem-vinda(o), ${response.usuario.nome}.`);
+      onLoginSuccess?.();
     } catch (error) {
       setIsError(true);
 
@@ -43,6 +50,22 @@ export function Login() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleDevAccess() {
+    localStorage.setItem('lunetras_token', 'token-dev-lunetras');
+    localStorage.setItem(
+      'lunetras_usuario',
+      JSON.stringify({
+        id: 'dev-admin',
+        nome: 'Administrador(a) Dev',
+        perfil: 'ADMINISTRADOR',
+      }),
+    );
+
+    setIsError(false);
+    setMessage('Modo desenvolvimento ativo. Acesso liberado para o painel.');
+    onLoginSuccess?.();
   }
 
   return (
@@ -94,6 +117,12 @@ export function Login() {
           <button type="submit" className={styles.submitButton} disabled={loading}>
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
+
+          {DEV_BYPASS ? (
+            <button type="button" className={styles.devButton} onClick={handleDevAccess}>
+              Entrar em modo desenvolvimento
+            </button>
+          ) : null}
 
           <a className={styles.forgotPassword} href="#">
             Esqueceu sua senha?
