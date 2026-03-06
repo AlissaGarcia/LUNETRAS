@@ -17,6 +17,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Usuario> register(@RequestBody Usuario usuario) {
-        return ResponseEntity.ok(usuarioService.cadastrar(usuario));
+        return ResponseEntity.ok(usuarioService.cadastrarProfessor(usuario));
     }
 }

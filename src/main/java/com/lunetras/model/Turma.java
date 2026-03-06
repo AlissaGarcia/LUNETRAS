@@ -3,6 +3,7 @@ package com.lunetras.model;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.lunetras.model.Usuario;
 
 @Entity
 @Table(name = "turmas")
