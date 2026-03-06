@@ -19,7 +19,7 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
 
-    // RF004 - Cadastrar Professor
+    //  Cadastrar Professor
     @PostMapping("/professores")
     public ResponseEntity<Usuario> cadastrarProfessor(
             @RequestBody @Valid ProfessorCadastro dto) {
@@ -41,7 +41,7 @@ public class UsuarioController {
     }
 
 
-    // RF006 - Editar Usuário
+    //  Editar Usuário
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> editarUsuario(
             @PathVariable Long id,
@@ -53,7 +53,7 @@ public class UsuarioController {
     }
 
 
-    // RF006 - Desativar Usuário
+    // Desativar Usuário
     @PatchMapping("/{id}/desativar")
     public ResponseEntity<Void> desativarUsuario(@PathVariable Long id) {
 
