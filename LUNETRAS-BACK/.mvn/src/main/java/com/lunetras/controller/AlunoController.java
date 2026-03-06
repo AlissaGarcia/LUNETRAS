@@ -43,4 +43,10 @@ public class AlunoController {
         alunoService.remover(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/relatorios/nivel")
+    public List<AlunoResponse> relatorioPorNivel(
+            @RequestParam String nivel) {
+
+        return alunoService.relatorioPorNivel(nivel);
+    }
 }

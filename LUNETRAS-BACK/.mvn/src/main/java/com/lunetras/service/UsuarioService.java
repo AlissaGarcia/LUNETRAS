@@ -85,4 +85,6 @@ public class UsuarioService {
                 .substring(0, 8);
     }
 
+    public void cadastrarProfessor(Usuario usuario) {
+    }
 }

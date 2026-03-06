@@ -18,10 +18,11 @@ public class Turma {
     @Column(nullable = false)
     private Integer ano; // primeiro ao quinto
 
-    //  relacionamento com professor
+    // professor responsável pela turma
     @ManyToOne
     @JoinColumn(name = "professor_id")
     private Usuario professor;
+
 
     //uma turma possui vários alunos
     @OneToMany(mappedBy = "turma", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -37,14 +38,17 @@ public class Turma {
     }
 
     public Long getId() {
+
         return id;
     }
 
     public String getNome() {
+
         return nome;
     }
 
     public Integer getAno() {
+
         return ano;
     }
 
@@ -52,25 +56,28 @@ public class Turma {
         return alunos;
     }
 
-    //  GETTER
     public Usuario getProfessor() {
+
         return professor;
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
     public void setNome(String nome) {
+
         this.nome = nome;
     }
 
     public void setAno(Integer ano) {
+
         this.ano = ano;
     }
 
-    //  SETTER
     public void setProfessor(Usuario professor) {
+
         this.professor = professor;
     }
 

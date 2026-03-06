@@ -19,7 +19,6 @@ public class TurmaService {
     private final TurmaRepository turmaRepository;
     private final UsuarioRepository usuarioRepository;
 
-
     public TurmaService(TurmaRepository turmaRepository,
                         UsuarioRepository usuarioRepository) {
         this.turmaRepository = turmaRepository;
@@ -28,12 +27,10 @@ public class TurmaService {
 
     public TurmaResponse criar(TurmaRequest dto) {
 
-        // buscar e valida professor
         Usuario professor = usuarioRepository.findById(dto.getProfessorId())
                 .orElseThrow(() ->
                         new IllegalArgumentException("Professor não encontrado"));
 
-        // valida se é professor
         if (professor.getPerfil() != Perfil.PROFESSOR) {
             throw new IllegalArgumentException("Usuário informado não é um professor");
         }
@@ -65,13 +62,34 @@ public class TurmaService {
         turmaRepository.deleteById(id);
     }
 
+
+    public TurmaResponse vincularProfessor(Long turmaId, Long professorId) {
+
+        Turma turma = turmaRepository.findById(turmaId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Turma não encontrada"));
+
+        Usuario professor = usuarioRepository.findById(professorId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Professor não encontrado"));
+
+        if (professor.getPerfil() != Perfil.PROFESSOR) {
+            throw new IllegalArgumentException("Usuário informado não é um professor");
+        }
+
+        turma.setProfessor(professor);
+
+        Turma salva = turmaRepository.save(turma);
+
+        return toResponse(salva);
+    }
+
     private TurmaResponse toResponse(Turma turma) {
         TurmaResponse response = new TurmaResponse();
         response.setId(turma.getId());
         response.setNome(turma.getNome());
         response.setAno(turma.getAno());
 
-        // retornar nome do professor
         if (turma.getProfessor() != null) {
             response.setProfessorNome(turma.getProfessor().getNome());
         }

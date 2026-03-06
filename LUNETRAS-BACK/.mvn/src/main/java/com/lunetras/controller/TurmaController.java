@@ -27,4 +27,13 @@ public class TurmaController {
         TurmaResponse response = turmaService.criar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    @PatchMapping("/{turmaId}/professor/{professorId}")
+    public ResponseEntity<TurmaResponse> vincularProfessor(
+            @PathVariable Long turmaId,
+            @PathVariable Long professorId) {
+
+        return ResponseEntity.ok(
+                turmaService.vincularProfessor(turmaId, professorId)
+        );
+    }
 }

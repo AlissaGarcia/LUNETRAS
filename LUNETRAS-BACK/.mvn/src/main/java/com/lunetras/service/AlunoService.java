@@ -53,4 +53,11 @@ public class AlunoService {
         response.setDataNascimento(aluno.getDataNascimento());
         return response;
     }
+    public List<AlunoResponse> relatorioPorNivel(String nivel) {
+
+        return alunoRepository.findByNivelPsicogenetico(nivel)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 }
