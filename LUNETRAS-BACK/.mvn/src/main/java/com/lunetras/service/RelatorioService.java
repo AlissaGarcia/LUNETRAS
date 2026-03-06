@@ -1,16 +1,25 @@
 package com.lunetras.service;
 
+import com.lunetras.dto.EstatisticaNivel;
 import com.lunetras.model.AvaliacaoPsicogenetica;
 import com.lunetras.repository.AvaliacaoPsicogeneticaRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class RelatorioService {
-    private AvaliacaoPsicogeneticaRepository avaliacaoRepository;
+        private final AvaliacaoPsicogeneticaRepository avaliacaoRepository;
 
-    public List<AvaliacaoPsicogenetica> relatorioPorTurmaEBimestre(Long turmaId, Integer bimestre) {
+    public RelatorioService(AvaliacaoPsicogeneticaRepository avaliacaoRepository) {
+                this.avaliacaoRepository = avaliacaoRepository;
+            }
 
-        return avaliacaoRepository
-                .findByAlunoTurmaIdAndBimestre(turmaId, bimestre);
-    }
-}
+            public List<AvaliacaoPsicogenetica> relatorioPorTurmaEBimestre(Long turmaId, Integer bimestre, Integer periodoLetivo) {
+                return avaliacaoRepository.buscarPorTurmaEBimestreEPeriodo(turmaId, bimestre, periodoLetivo);
+            }
+
+            public List<EstatisticaNivel> estatisticasPorNivel(Long turmaId, Integer bimestre, Integer periodoLetivo) {
+                return avaliacaoRepository.contarPorNivel(turmaId, bimestre, periodoLetivo);
+            }
+        }

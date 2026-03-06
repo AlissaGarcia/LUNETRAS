@@ -43,6 +43,11 @@ public class AvaliacaoPsicogeneticaService {
             throw new IllegalArgumentException("O bimestre deve ser entre 1 e 4");
         }
 
+        if (avaliacao.getNivel() == null) {
+            throw new IllegalArgumentException("Nível psicogenético é obrigatório");
+        }
+
+
         if (avaliacao.getDataAvaliacao() == null) {
             throw new IllegalArgumentException("Data da avaliação é obrigatória");
         }
@@ -73,9 +78,10 @@ public class AvaliacaoPsicogeneticaService {
 
         //apenas uma avaliacao por bimestre
         boolean jaExiste = avaliacaoPsicogeneticaRepository
-                .findByAlunoIdAndBimestre(
+                .findByAlunoIdAndBimestreAndPeriodoLetivo(
                         avaliacao.getAluno().getId(),
-                        avaliacao.getBimestre()
+                        avaliacao.getBimestre(),
+                        avaliacao.getPeriodoLetivo()
                 ).isPresent();
 
         if (jaExiste) {

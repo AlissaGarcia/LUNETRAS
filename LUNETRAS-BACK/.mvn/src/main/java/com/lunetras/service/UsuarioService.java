@@ -40,8 +40,6 @@ public class UsuarioService {
 
         Usuario salvo = usuarioRepository.save(usuario);
 
-        System.out.println("Senha inicial do professor: " + senhaInicial);
-
         return salvo;
     }
 
@@ -83,8 +81,5 @@ public class UsuarioService {
         return UUID.randomUUID()
                 .toString()
                 .substring(0, 8);
-    }
-
-    public void cadastrarProfessor(Usuario usuario) {
     }
 }

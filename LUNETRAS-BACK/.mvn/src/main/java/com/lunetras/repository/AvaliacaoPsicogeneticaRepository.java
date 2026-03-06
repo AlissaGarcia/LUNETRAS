@@ -2,10 +2,9 @@ package com.lunetras.repository;
 
 import com.lunetras.dto.EstatisticaNivel;
 import com.lunetras.model.AvaliacaoPsicogenetica;
-import com.lunetras.dto.EstatisticaNivel;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,25 +13,21 @@ import java.util.Optional;
 public interface AvaliacaoPsicogeneticaRepository
         extends JpaRepository<AvaliacaoPsicogenetica, Long> {
 
-    // RF012 - impedir duplicidade de avaliação no mesmo bimestre
     Optional<AvaliacaoPsicogenetica>
-    findByAlunoIdAndBimestre(Long alunoId, Integer bimestre);
+    findByAlunoIdAndBimestreAndPeriodoLetivo(Long alunoId, Integer bimestre, Integer periodoLetivo);
 
 
-    // RF016 - buscar avaliações por turma e bimestre
     List<AvaliacaoPsicogenetica>
-    findByAlunoTurmaIdAndBimestre(Long turmaId, Integer bimestre);
+    findByAlunoTurmaIdAndBimestre(Long turmaId, Integer bimestre, Integer periodoLetivo);
 
 
-
-    // gera estatística por nível psicogenético
     @Query("""
-        SELECT new com.lunetras.dto.EstatisticaNivelDTO(a.nivel, COUNT(a))
+          SELECT new com.lunetras.dto.EstatisticaNivel(a.nivel, COUNT(a))
         FROM AvaliacaoPsicogenetica a
         WHERE a.aluno.turma.id = :turmaId
         AND a.bimestre = :bimestre
+        AND a.periodoLetivo = :periodoLetivo
         GROUP BY a.nivel
     """)
-    List<EstatisticaNivel> contarPorNivel(Long turmaId, Integer bimestre);
-
+    List<EstatisticaNivel> contarPorNivel(Long turmaId, Integer bimestre, Integer periodoLetivo);
 }

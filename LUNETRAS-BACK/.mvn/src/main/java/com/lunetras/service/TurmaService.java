@@ -38,6 +38,7 @@ public class TurmaService {
         Turma turma = new Turma();
         turma.setNome(dto.getNome());
         turma.setAno(dto.getAno());
+        turma.setTurno(dto.getTurno());
         turma.setProfessor(professor);
 
         Turma salva = turmaRepository.save(turma);
@@ -89,6 +90,7 @@ public class TurmaService {
         response.setId(turma.getId());
         response.setNome(turma.getNome());
         response.setAno(turma.getAno());
+        response.setTurno(turma.getTurno());
 
         if (turma.getProfessor() != null) {
             response.setProfessorNome(turma.getProfessor().getNome());

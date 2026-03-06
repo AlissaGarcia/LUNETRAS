@@ -3,6 +3,7 @@ package com.lunetras.controller;
 import com.lunetras.dto.AlunoRequest;
 import com.lunetras.dto.AlunoResponse;
 import com.lunetras.service.AlunoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class AlunoController {
 
     @PostMapping
     public ResponseEntity<AlunoResponse> criarAluno(
-            @RequestBody AlunoRequest dto) {
+            @RequestBody @Valid AlunoRequest dto) {
 
         AlunoResponse aluno = alunoService.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(aluno);
@@ -42,11 +43,5 @@ public class AlunoController {
     public ResponseEntity<Void> removerAluno(@PathVariable Long id) {
         alunoService.remover(id);
         return ResponseEntity.noContent().build();
-    }
-    @GetMapping("/relatorios/nivel")
-    public List<AlunoResponse> relatorioPorNivel(
-            @RequestParam String nivel) {
-
-        return alunoService.relatorioPorNivel(nivel);
     }
 }

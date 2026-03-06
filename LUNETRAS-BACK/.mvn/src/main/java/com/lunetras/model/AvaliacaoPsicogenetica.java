@@ -92,6 +92,18 @@ public class AvaliacaoPsicogenetica {
         return professor;
     }
 
+    public void setBimestre(Integer bimestre) {
+        this.bimestre = bimestre;
+    }
+
+    public void setNivel(NivelPsicogenetico nivel) {
+        this.nivel = nivel;
+    }
+
+    public void setObservacoes(String observacoes) {
+        this.observacoes = observacoes;
+    }
+
     public void setAluno(Aluno aluno) {
         this.aluno = aluno;
     }
@@ -108,3 +120,4 @@ public class AvaliacaoPsicogenetica {
         this.periodoLetivo = periodoLetivo;
     }
 }
+
