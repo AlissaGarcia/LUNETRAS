@@ -30,4 +30,5 @@ public interface AvaliacaoPsicogeneticaRepository
         GROUP BY a.nivel
     """)
     List<EstatisticaNivel> contarPorNivel(Long turmaId, Integer bimestre, Integer periodoLetivo);
+
 }
