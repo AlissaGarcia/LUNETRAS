@@ -19,7 +19,6 @@ public class RelatorioService {
     public List<AvaliacaoPsicogenetica> relatorioPorTurmaEBimestre(Long turmaId, Integer bimestre, Integer periodoLetivo) {
         return avaliacaoRepository.findByAluno_Turma_IdAndBimestreAndPeriodoLetivo(turmaId, bimestre, periodoLetivo);
     }
-
     public List<EstatisticaNivel> estatisticasPorNivel(Long turmaId, Integer bimestre, Integer periodoLetivo) {
         return avaliacaoRepository.contarPorNivel(turmaId, bimestre, periodoLetivo);
     }
