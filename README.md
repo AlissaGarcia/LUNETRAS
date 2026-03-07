@@ -202,33 +202,42 @@ O **LUNETRAS** é uma solução educacional que une tecnologia e pedagogia, cont
 
 ## Execução com Docker (qualquer máquina)
 
-Para evitar dependência de caminhos locais de Java (ex.: `java.home` no VS Code), a execução pode ser feita totalmente por containers.
+Esta configuração sobe o banco PostgreSQL, o back-end Spring Boot e o front-end React em containers integrados.
 
-### Arquivos adicionados
+### Arquivos de Docker
 
-- `docker-compose.yml`: sobe banco PostgreSQL, back-end e front-end.
-- `Dockerfile.backend`: imagem padrão para API Spring Boot (Java 17 + Maven).
+- `docker-compose.yml`: orquestra banco, API e front-end.
+- `LUNETRAS-BACK/Dockerfile`: build e runtime da API Java 17.
 - `LUNETRAS_Front/Dockerfile`: build do React/Vite e publicação via Nginx.
-- `.env.docker.example`: variáveis de ambiente de referência.
+- `.env.docker.example`: variáveis de ambiente padrão para desenvolvimento local.
 
-### 1) Subir todo o ambiente
+### 1) Configurar ambiente
 
 ```bash
 cp .env.docker.example .env
+```
+
+### 2) Subir tudo
+
+```bash
 docker compose up -d --build
 ```
 
-Front-end: `http://localhost:4173`  
-Back-end: `http://localhost:8080`
+### 3) Acessos
 
-### 2) Build da imagem do back-end
+- Front-end: `http://localhost:4173`
+- Back-end: `http://localhost:8080`
+- Banco PostgreSQL: `localhost:5432`
 
-No repositório do back-end (Spring Boot), use o `Dockerfile.backend` como base:
+### 4) Parar ambiente
 
 ```bash
-docker build -f Dockerfile.backend -t lunetras-backend:latest .
+docker compose down
 ```
 
-Depois, volte a este repositório e rode o `docker compose up -d`.
+Para remover também o volume do banco:
 
-> Observação: o serviço `backend` no compose usa a imagem `lunetras-backend:latest` por padrão (configurável em `BACKEND_IMAGE`).
+```bash
+docker compose down -v
+```
+
