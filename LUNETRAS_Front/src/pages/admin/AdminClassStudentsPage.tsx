@@ -290,7 +290,9 @@ export function AdminClassStudentsPage({
                       className={styles.removeStudentButton}
                       onClick={(event) => {
                         event.stopPropagation();
-                        classRoom && onRemoveStudentFromClass(classRoom.id, student.id);
+                         if (classRoom) {
+                                                  onRemoveStudentFromClass(classRoom.id, student.id);
+                                                }
                       }}
                     >
                       Remover
