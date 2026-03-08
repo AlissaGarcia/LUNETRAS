@@ -1,12 +1,21 @@
 import './App.css';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AdminClassStudentsPage } from './pages/admin/AdminClassStudentsPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminReportsPage } from './pages/admin/AdminReportsPage';
 import { literacyStageFactor, type ClassRoom, type LiteracyStage } from './pages/admin/metrics';
-import { INITIAL_CLASSES, INITIAL_STUDENTS_BY_CLASS, buildStudentsForNewClass, type Student } from './pages/admin/mockData';
+import { buildStudentsForNewClass, type Student } from './pages/admin/mockData';
 import type { CreateClassInput } from './pages/admin/types';
 import { Login } from './pages/login/Login';
+import { logout } from './services/auth';
+import {
+  createClass,
+  createStudent,
+  hydrateClassesAndStudents,
+  removeClass,
+  removeStudent,
+  updateStudent,
+} from './services/classes';
 
 type AdminView = 'DASHBOARD' | 'CLASS_STUDENTS' | 'REPORTS';
 const LITERACY_STAGE_ORDER: LiteracyStage[] = [
@@ -41,35 +50,79 @@ function statusByLevel(level: LiteracyStage) {
   return 'EVALUATED' as const;
 }
 
+function resolveUserName() {
+  const rawUser = localStorage.getItem('lunetras_usuario');
+
+  if (!rawUser) {
+    return 'Administrador(a)';
+  }
+
+  try {
+    const parsed = JSON.parse(rawUser) as { nome?: string };
+    return parsed.nome ?? 'Administrador(a)';
+  } catch {
+    return 'Administrador(a)';
+  }
+}
+
 function App() {
-  const [token, setToken] = useState(() => localStorage.getItem('lunetras_token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('lunetras_auth') === 'true');
   const [adminView, setAdminView] = useState<AdminView>('DASHBOARD');
-  const [selectedClassId, setSelectedClassId] = useState<string>('t1');
-  const [classes, setClasses] = useState<ClassRoom[]>(INITIAL_CLASSES);
-  const [studentsByClass, setStudentsByClass] = useState(INITIAL_STUDENTS_BY_CLASS);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [classes, setClasses] = useState<ClassRoom[]>([]);
+  const [studentsByClass, setStudentsByClass] = useState<Record<string, Student[]>>({});
+  const [isHydrating, setIsHydrating] = useState(false);
 
-  const userName = useMemo(() => {
-    const rawUser = localStorage.getItem('lunetras_usuario');
+  const userName = resolveUserName();
 
-    if (!rawUser) {
-      return 'Administrador(a)';
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setClasses([]);
+      setStudentsByClass({});
+      setSelectedClassId('');
+      return;
     }
 
-    try {
-      const parsed = JSON.parse(rawUser) as { nome?: string };
-      return parsed.nome ?? 'Administrador(a)';
-    } catch {
-      return 'Administrador(a)';
+    let cancelled = false;
+
+    async function loadInitialData() {
+      setIsHydrating(true);
+
+      try {
+        const payload = await hydrateClassesAndStudents();
+        if (cancelled) {
+          return;
+        }
+
+        setClasses(payload.classes);
+        setStudentsByClass(payload.studentsByClass);
+
+        if (payload.classes.length > 0) {
+          setSelectedClassId((current) => current || payload.classes[0].id);
+        }
+      } catch {
+        if (!cancelled) {
+          setClasses([]);
+          setStudentsByClass({});
+        }
+      } finally {
+        if (!cancelled) {
+          setIsHydrating(false);
+        }
+      }
     }
-  }, [token]);
+
+    loadInitialData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   const classesWithDerivedMetrics = useMemo(
     () =>
       classes.map((classRoom) => {
-        const students = studentsByClass[classRoom.id];
-        if (!students) {
-          return classRoom;
-        }
+        const students = studentsByClass[classRoom.id] ?? [];
 
         const totalAlunos = students.length;
         const alunosAlfabeticos = students.reduce((total, student) => total + literacyStageFactor(student.nivel), 0);
@@ -95,31 +148,7 @@ function App() {
     const allStudents = Object.entries(studentsByClass)
       .filter(([classId]) => activeClassIds.has(classId))
       .flatMap(([, students]) => students);
-
-    const total = allStudents.length;
-    const counts = LITERACY_STAGE_ORDER.reduce(
-      (acc, stage) => ({ ...acc, [stage]: 0 }),
-      {} as Record<LiteracyStage, number>,
-    );
-
-    allStudents.forEach((student) => {
-      if (student.nivel in counts) {
-        counts[student.nivel] += 1;
-      }
-    });
-
-    return LITERACY_STAGE_ORDER.map((stage) => ({
-      stage,
-      count: counts[stage],
-      percent: total > 0 ? Math.round((counts[stage] / total) * 100) : 0,
-    }));
-  }, [classesWithDerivedMetrics, studentsByClass]);
-
-  const classLevelDistribution = useMemo(
-    () =>
-      classesWithDerivedMetrics.map((classRoom) => {
-        const students = studentsByClass[classRoom.id] ?? [];
-        const total = students.length;
+@@ -123,191 +176,262 @@ function App() {
         const counts = LITERACY_STAGE_ORDER.reduce(
           (acc, stage) => ({ ...acc, [stage]: 0 }),
           {} as Record<LiteracyStage, number>,
@@ -145,120 +174,187 @@ function App() {
   );
 
   function handleAuthSuccess() {
-    setToken(localStorage.getItem('lunetras_token'));
+    setIsAuthenticated(localStorage.getItem('lunetras_auth') === 'true');
   }
 
-  function handleLogout() {
-    localStorage.removeItem('lunetras_token');
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch {
+      // Ignora erro de logout remoto e limpa sessão local mesmo assim.
+    }
+
+    localStorage.removeItem('lunetras_auth');
     localStorage.removeItem('lunetras_usuario');
-    setToken(null);
+    setIsAuthenticated(false);
     setAdminView('DASHBOARD');
   }
 
-  function handleCreateClass(input: CreateClassInput) {
-    const classId = `t-${Date.now()}`;
-    const hasManualStudents = Boolean(input.students && input.students.length > 0);
-    const totalAlunosInput = input.totalAlunos ?? 0;
-    const percentualInput = input.percentualAlfabetizacao ?? 0;
+  async function handleCreateClass(input: CreateClassInput) {
+    if (!isAuthenticated) {
+      return;
+    }
 
-    const normalizedStudents: Student[] = hasManualStudents
-      ? input.students!.map((student, index) => ({
-          id: `${classId}-a${index + 1}`,
-          ...student,
-        }))
-      : totalAlunosInput > 0
-        ? buildStudentsForNewClass(classId, totalAlunosInput, percentualInput)
-        : [];
+    try {
+      const createdClass = await createClass({
+        nome: input.nome,
+        professor: input.professor,
+      });
 
-    const newClass: ClassRoom = {
-      id: classId,
-      nome: input.nome,
-      professor: input.professor ?? 'A definir',
-      totalAlunos: normalizedStudents.length,
-      alunosAlfabeticos: normalizedStudents.reduce((total, student) => total + literacyStageFactor(student.nivel), 0),
-      pendencias: normalizedStudents.filter((student) => student.status !== 'EVALUATED').length,
-      ativa: true,
-    };
+      const hasManualStudents = Boolean(input.students && input.students.length > 0);
+      const totalAlunosInput = input.totalAlunos ?? 0;
+      const percentualInput = input.percentualAlfabetizacao ?? 0;
 
-    setClasses((current) => [newClass, ...current]);
-    setStudentsByClass((current) => ({
-      ...current,
-      [classId]: normalizedStudents,
-    }));
-    setSelectedClassId(classId);
+      const defaultStudents: Student[] = hasManualStudents
+        ? input.students!.map((student, index) => ({
+            id: `${createdClass.id}-a${index + 1}`,
+            ...student,
+          }))
+        : totalAlunosInput > 0
+          ? buildStudentsForNewClass(createdClass.id, totalAlunosInput, percentualInput)
+          : [];
+
+      const persistedStudents = await Promise.all(
+        defaultStudents.map((student) =>
+          createStudent(createdClass.id, {
+            nome: student.nome,
+            dataNascimento: student.dataNascimento,
+            nivel: student.nivel,
+            status: student.status,
+            observacoes: student.observacoes,
+          }),
+        ),
+      );
+
+      setClasses((current) => [createdClass, ...current]);
+      setStudentsByClass((current) => ({
+        ...current,
+        [createdClass.id]: persistedStudents,
+      }));
+      setSelectedClassId(createdClass.id);
+    } catch {
+      // Falha da API não interrompe o restante da navegação.
+    }
   }
 
-  function handleAddStudentToClass(
+  async function handleAddStudentToClass(
     classId: string,
     payload: { nome: string; dataNascimento: string; nivel: LiteracyStage },
   ) {
-    const studentId = `${classId}-a${Date.now()}`;
-    const normalizedLevel = payload.nivel;
-    const status = statusByLevel(normalizedLevel);
+    if (!isAuthenticated) {
+      return;
+    }
 
-    setStudentsByClass((current) => {
-      const currentStudents = current[classId] ?? [];
-      return {
-        ...current,
-        [classId]: [
-          ...currentStudents,
-          {
-            id: studentId,
-            nome: payload.nome,
-            dataNascimento: payload.dataNascimento,
-            nivel: normalizedLevel,
-            status,
-            observacoes: '',
-          },
-        ],
-      };
-    });
+    const status = statusByLevel(payload.nivel);
+
+    try {
+      const createdStudent = await createStudent(classId, {
+        nome: payload.nome,
+        dataNascimento: payload.dataNascimento,
+        nivel: payload.nivel,
+        status,
+        observacoes: '',
+      });
+
+      setStudentsByClass((current) => {
+        const currentStudents = current[classId] ?? [];
+        return {
+          ...current,
+          [classId]: [...currentStudents, createdStudent],
+        };
+      });
+    } catch {
+      // Falha da API não interrompe o restante da navegação.
+    }
   }
 
-  function handleUpdateStudentInClass(
+  async function handleUpdateStudentInClass(
     classId: string,
     studentId: string,
     payload: { nivel: LiteracyStage; observacoes: string; status: Student['status'] },
   ) {
-    setStudentsByClass((current) => {
-      const currentStudents = current[classId] ?? [];
+    if (!isAuthenticated) {
+      return;
+    }
 
-      return {
-        ...current,
-        [classId]: currentStudents.map((student) =>
-          student.id === studentId
-            ? {
+    try {
+      const updatedStudent = await updateStudent(classId, studentId, {
+        nivel: payload.nivel,
+        observacoes: payload.observacoes,
+        status: payload.status,
+      });
+
+      setStudentsByClass((current) => {
+        const currentStudents = current[classId] ?? [];
+
+        return {
+          ...current,
+          [classId]: currentStudents.map((student) => {
+            if (student.id !== studentId) {
+              return student;
+            }
+
+            if (!updatedStudent) {
+              return {
                 ...student,
                 nivel: payload.nivel,
                 observacoes: payload.observacoes,
                 status: payload.status,
-              }
-            : student,
-        ),
-      };
-    });
+              };
+            }
+
+            return {
+              ...student,
+              ...updatedStudent,
+            };
+          }),
+        };
+      });
+    } catch {
+      // Falha da API não interrompe o restante da navegação.
+    }
   }
 
-  function handleRemoveStudentFromClass(classId: string, studentId: string) {
-    setStudentsByClass((current) => {
-      const currentStudents = current[classId] ?? [];
-      return {
-        ...current,
-        [classId]: currentStudents.filter((student) => student.id !== studentId),
-      };
-    });
+  async function handleRemoveStudentFromClass(classId: string, studentId: string) {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    try {
+      await removeStudent(classId, studentId);
+
+      setStudentsByClass((current) => {
+        const currentStudents = current[classId] ?? [];
+        return {
+          ...current,
+          [classId]: currentStudents.filter((student) => student.id !== studentId),
+        };
+      });
+    } catch {
+      // Falha da API não interrompe o restante da navegação.
+    }
   }
 
-  function handleRemoveClass(classId: string) {
-    setClasses((current) => current.filter((classRoom) => classRoom.id !== classId));
-    setStudentsByClass((current) => {
-      const next = { ...current };
-      delete next[classId];
-      return next;
-    });
+  async function handleRemoveClass(classId: string) {
+    if (!isAuthenticated) {
+      return;
+    }
 
-    if (selectedClassId === classId) {
-      setAdminView('DASHBOARD');
+    try {
+      await removeClass(classId);
+
+      setClasses((current) => current.filter((classRoom) => classRoom.id !== classId));
+      setStudentsByClass((current) => {
+        const next = { ...current };
+        delete next[classId];
+        return next;
+      });
+
+      if (selectedClassId === classId) {
+        setAdminView('DASHBOARD');
+      }
+    } catch {
+      // Falha da API não interrompe o restante da navegação.
     }
   }
 
@@ -282,8 +378,12 @@ function App() {
     setAdminView('REPORTS');
   }
 
-  if (!token) {
+  if (!isAuthenticated) {
     return <Login onLoginSuccess={handleAuthSuccess} />;
+  }
+
+  if (isHydrating) {
+    return <main style={{ padding: 24 }}>Carregando dados...</main>;
   }
 
   if (adminView === 'CLASS_STUDENTS') {
@@ -311,27 +411,3 @@ function App() {
       <AdminReportsPage
         userName={userName}
         classes={classesWithDerivedMetrics}
-        studentsByClass={studentsByClass}
-        onBackToDashboard={handleBackToDashboard}
-        onGoToClasses={handleGoToClasses}
-        onLogout={handleLogout}
-      />
-    );
-  }
-
-  return (
-    <AdminDashboard
-      userName={userName}
-      onLogout={handleLogout}
-      classes={classesWithDerivedMetrics}
-      levelDistribution={levelDistribution}
-      classLevelDistribution={classLevelDistribution}
-      onRemoveClass={handleRemoveClass}
-      onOpenClass={handleOpenClass}
-      onGoToClasses={handleGoToClasses}
-      onGoToReports={handleGoToReports}
-    />
-  );
-}
-
-export default App;
