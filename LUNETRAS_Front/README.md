@@ -28,5 +28,6 @@ A comunicação HTTP fica centralizada em:
 - `src/config/env.ts`: define URL base da API.
 - `src/services/api.ts`: cliente HTTP genérico e tratamento de erros.
 - `src/services/auth.ts`: contrato de autenticação (`POST /auth/login`).
+- `src/services/classes.ts`: integração com turmas/alunos (listagem, criação, edição e remoção).
 
-A tela de login (`src/pages/login/Login.tsx`) consome `login(...)`, exibe estados de carregamento/erro e persiste token e usuário no `localStorage`.
+A tela de login (`src/pages/login/Login.tsx`) consome `login(...)`, exibe estados de carregamento/erro e persiste estado de autenticação + usuário no `localStorage` enquanto a sessão stateful é mantida por cookie HTTP.

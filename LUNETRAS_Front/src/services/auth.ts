@@ -12,36 +12,46 @@ export interface User {
 }
 
 export interface LoginResponse {
-  token: string;
   usuario: User;
 }
 
-interface BackendLoginResponse {
-  token: string;
+interface BackendMeResponse  {
   nome: string;
-  perfil: User['perfil'];
+  perfil:string;
 }
 
-function isFrontendLoginResponse(response: LoginResponse | BackendLoginResponse): response is LoginResponse {
-  return 'usuario' in response;
+function normalizeProfile(perfil: string): User['perfil'] {
+  if (perfil === 'PROFESSOR') {
+    return 'PROFESSOR';
+  }
+
+  return 'ADMINISTRADOR';
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const response = await apiRequest<LoginResponse | BackendLoginResponse>('/auth/login', {
-    method: 'POST',
-    body: payload,
+  await apiRequest<void>('/auth/login', {
+     method: 'POST',
+     body: new URLSearchParams({
+       username: payload.email,
+       password: payload.senha,
+     }),
   });
 
-  if (isFrontendLoginResponse(response)) {
-    return response;
-  }
+  const me = await apiRequest<BackendMeResponse>('/auth/me', {
+     method: 'GET',
+   });
 
-  return {
-    token: response.token,
-    usuario: {
-      id: '',
-      nome: response.nome,
-      perfil: response.perfil,
-    },
-  };
-}
+   return {
+     usuario: {
+       id: '',
+       nome: me.nome,
+       perfil: normalizeProfile(me.perfil),
+     },
+   };
+ }
+
+ export async function logout(): Promise<void> {
+   await apiRequest<void>('/auth/logout', {
+     method: 'POST',
+   });
+ }

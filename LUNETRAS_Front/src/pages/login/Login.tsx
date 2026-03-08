@@ -27,7 +27,6 @@ export function Login({ onLoginSuccess }: LoginProps) {
     try {
       const response = await login({ email, senha });
 
-      localStorage.setItem('lunetras_token', response.token);
       localStorage.setItem('lunetras_usuario', JSON.stringify(response.usuario));
 
       if (rememberMe) {
@@ -37,6 +36,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
       }
 
       setIsError(false);
+       localStorage.setItem('lunetras_auth', 'true');
       setMessage(`Login realizado com sucesso. Bem-vinda(o), ${response.usuario.nome}.`);
       onLoginSuccess?.();
     } catch (error) {
@@ -53,7 +53,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
   }
 
   function handleDevAccess() {
-    localStorage.setItem('lunetras_token', 'token-dev-lunetras');
+      localStorage.setItem('lunetras_auth', 'true');
     localStorage.setItem(
       'lunetras_usuario',
       JSON.stringify({

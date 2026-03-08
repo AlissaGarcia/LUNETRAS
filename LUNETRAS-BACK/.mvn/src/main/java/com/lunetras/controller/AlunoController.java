@@ -2,6 +2,7 @@ package com.lunetras.controller;
 
 import com.lunetras.dto.AlunoRequest;
 import com.lunetras.dto.AlunoResponse;
+import com.lunetras.dto.AlunoUpdateRequest;
 import com.lunetras.service.AlunoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -12,31 +13,44 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/alunos")
-@CrossOrigin(origins = "*")
 public class AlunoController {
 
     private final AlunoService alunoService;
 
     public AlunoController(AlunoService alunoService) {
+
         this.alunoService = alunoService;
     }
 
     @PostMapping
-    public ResponseEntity<AlunoResponse> criarAluno(
-            @RequestBody @Valid AlunoRequest dto) {
+    public ResponseEntity<AlunoResponse> criarAluno(@RequestBody @Valid AlunoRequest dto) {
 
         AlunoResponse aluno = alunoService.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(aluno);
     }
 
     @GetMapping
-    public ResponseEntity<List<AlunoResponse>> listarAlunos() {
+    public ResponseEntity<List<AlunoResponse>> listarAlunos(
+            @RequestParam(value = "turmaId", required = false) Long turmaId
+    ) {
+        if (turmaId != null) {
+            return ResponseEntity.ok(alunoService.listarPorTurma(turmaId));
+        }
+
         return ResponseEntity.ok(alunoService.listarTodos());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AlunoResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(alunoService.buscarPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AlunoResponse> atualizarAluno(
+            @PathVariable Long id,
+            @RequestBody AlunoUpdateRequest dto
+    ) {
+        return ResponseEntity.ok(alunoService.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")

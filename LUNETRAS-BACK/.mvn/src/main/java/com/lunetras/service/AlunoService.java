@@ -2,6 +2,7 @@ package com.lunetras.service;
 
 import com.lunetras.dto.AlunoRequest;
 import com.lunetras.dto.AlunoResponse;
+import com.lunetras.dto.AlunoUpdateRequest;
 import com.lunetras.model.Aluno;
 import com.lunetras.model.Turma;
 import com.lunetras.repository.AlunoRepository;
@@ -44,10 +45,42 @@ public class AlunoService {
                 .collect(Collectors.toList());
     }
 
+    public List<AlunoResponse> listarPorTurma(Long turmaId) {
+        return alunoRepository.findByTurma_Id(turmaId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public AlunoResponse buscarPorId(Long id) {
         Aluno aluno = alunoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado"));
         return toResponse(aluno);
+    }
+
+    public AlunoResponse atualizar(Long id, AlunoUpdateRequest dto) {
+        Aluno aluno = alunoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado"));
+
+        if (dto.getNome() != null && !dto.getNome().isBlank()) {
+            aluno.setNome(dto.getNome());
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            aluno.setEmail(dto.getEmail());
+        }
+
+        if (dto.getDataNascimento() != null) {
+            aluno.setDataNascimento(dto.getDataNascimento());
+        }
+
+        if (dto.getTurmaId() != null) {
+            Turma turma = turmaRepository.findById(dto.getTurmaId())
+                    .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
+            aluno.setTurma(turma);
+        }
+
+        return toResponse(alunoRepository.save(aluno));
     }
 
     public void remover(Long id) {
