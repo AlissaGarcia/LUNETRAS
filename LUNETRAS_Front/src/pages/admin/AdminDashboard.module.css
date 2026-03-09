@@ -72,6 +72,7 @@
   justify-content: space-between;
   gap: 14px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .header h1 {
@@ -338,6 +339,7 @@
   margin-top: 10px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .openClassButton {
@@ -481,11 +483,23 @@
     align-items: flex-start;
   }
 
+  .userBadge {
+    min-width: 0;
+    width: 100%;
+  }
+
   .classCategoryRow {
     grid-template-columns: 1fr;
   }
 
   .classCategoryRow span {
     text-align: left;
+  }
+}
+
+@media (max-width: 560px) {
+  .openClassButton,
+  .removeClassButton {
+    width: 100%;
   }
 }

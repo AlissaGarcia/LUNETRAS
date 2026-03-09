@@ -8,7 +8,36 @@ interface LoginProps {
   onLoginSuccess?: () => void;
 }
 
-const DEV_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_LOGIN !== 'false';
+const LOCAL_LOGIN_USERS = [
+  {
+    id: 'admin-local',
+    nome: 'Administrador(a)',
+    email: 'admin@lunetras.com',
+    senha: 'admin',
+    perfil: 'ADMINISTRADOR' as const,
+  },
+  {
+    id: 'prof-carla',
+    nome: 'Carla',
+    email: 'carla.prof@escola.com',
+    senha: '123456',
+    perfil: 'PROFESSOR' as const,
+  },
+  {
+    id: 'prof-renata',
+    nome: 'Renata',
+    email: 'renata.prof@escola.com',
+    senha: '123456',
+    perfil: 'PROFESSOR' as const,
+  },
+  {
+    id: 'prof-marcos',
+    nome: 'Marcos',
+    email: 'marcos.prof@escola.com',
+    senha: '123456',
+    perfil: 'PROFESSOR' as const,
+  },
+];
 
 export function Login({ onLoginSuccess }: LoginProps) {
   const [email, setEmail] = useState('');
@@ -40,32 +69,36 @@ export function Login({ onLoginSuccess }: LoginProps) {
       setMessage(`Login realizado com sucesso. Bem-vinda(o), ${response.usuario.nome}.`);
       onLoginSuccess?.();
     } catch (error) {
-      setIsError(true);
+      const localUser = LOCAL_LOGIN_USERS.find(
+        (user) => user.email.toLowerCase() === email.trim().toLowerCase() && user.senha === senha,
+      );
 
-      if (error instanceof ApiError) {
-        setMessage(`Falha ao autenticar (${error.status}). Verifique os dados e tente novamente.`);
+      if (localUser) {
+        localStorage.setItem(
+          'lunetras_usuario',
+          JSON.stringify({
+            id: localUser.id,
+            nome: localUser.nome,
+            perfil: localUser.perfil,
+            email: localUser.email,
+          }),
+        );
+        localStorage.setItem('lunetras_auth', 'true');
+        setIsError(false);
+        setMessage(`Login local realizado com sucesso. Bem-vinda(o), ${localUser.nome}.`);
+        onLoginSuccess?.();
       } else {
-        setMessage('Nao foi possivel conectar com o servidor.');
+        setIsError(true);
+
+        if (error instanceof ApiError) {
+          setMessage(`Falha ao autenticar (${error.status}). Verifique os dados e tente novamente.`);
+        } else {
+          setMessage('Não foi possível conectar com o servidor.');
+        }
       }
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleDevAccess() {
-      localStorage.setItem('lunetras_auth', 'true');
-    localStorage.setItem(
-      'lunetras_usuario',
-      JSON.stringify({
-        id: 'dev-admin',
-        nome: 'Administrador(a) Dev',
-        perfil: 'ADMINISTRADOR',
-      }),
-    );
-
-    setIsError(false);
-    setMessage('Modo desenvolvimento ativo. Acesso liberado para o painel.');
-    onLoginSuccess?.();
   }
 
   return (
@@ -117,12 +150,6 @@ export function Login({ onLoginSuccess }: LoginProps) {
           <button type="submit" className={styles.submitButton} disabled={loading}>
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
-
-          {DEV_BYPASS ? (
-            <button type="button" className={styles.devButton} onClick={handleDevAccess}>
-              Entrar em modo desenvolvimento
-            </button>
-          ) : null}
 
           <a className={styles.forgotPassword} href="#">
             Esqueceu sua senha?

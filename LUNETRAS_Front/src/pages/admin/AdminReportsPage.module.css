@@ -65,6 +65,7 @@
   display: grid;
   gap: 16px;
   align-content: start;
+  min-width: 0;
 }
 
 .header {
@@ -72,6 +73,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 14px;
+  flex-wrap: wrap;
 }
 
 .header h1 {
@@ -89,6 +91,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .roundIcon {
@@ -133,6 +136,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .kpiIcon,
@@ -187,6 +191,7 @@
   border: 1px solid #d9e5fb;
   background-color: #f7faff;
   padding: 18px;
+  min-width: 0;
 }
 
 .blockHeader {
@@ -195,6 +200,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .blockHeader h3 {
@@ -210,14 +216,94 @@
   background-color: #f8fbff;
   color: #5f718f;
   padding: 0 12px;
+  min-width: 180px;
 }
 
 .exportButton {
-  border: none;
-  background-color: transparent;
+  border: 1px solid #d5e3fa;
+  background-color: #f8fbff;
   color: #4d7adb;
   font-weight: 600;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0 14px;
   cursor: pointer;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: rgba(23, 41, 74, 0.22);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.modalCard {
+  width: min(520px, 100%);
+  border-radius: 18px;
+  border: 1px solid #d8e5fa;
+  background: #f7faff;
+  box-shadow: 0 22px 48px rgba(42, 74, 135, 0.18);
+  padding: 22px;
+}
+
+.modalCard h3 {
+  margin: 0;
+  color: #1f2a3d;
+  font-size: 1.5rem;
+}
+
+.modalCard p {
+  margin: 8px 0 14px;
+  color: #6d7b93;
+}
+
+.modalLabel {
+  display: block;
+  color: #435573;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.modalSelect {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid #d5e3fa;
+  background-color: #f8fbff;
+  color: #5f718f;
+  padding: 0 12px;
+}
+
+.modalActions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modalCancel,
+.modalConfirm {
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modalCancel {
+  border: 1px solid #d5e3fa;
+  background-color: #f8fbff;
+  color: #5f718f;
+}
+
+.modalConfirm {
+  border: 1px solid #4d79d8;
+  background: linear-gradient(135deg, #5d87e2, #4d79d8);
+  color: #fff;
 }
 
 .rows {
@@ -236,6 +322,7 @@
   align-items: center;
   gap: 8px;
   color: #30435f;
+  flex-wrap: wrap;
 }
 
 .rowInfo strong {
@@ -278,5 +365,14 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .userBadge {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .blockHeader select {
+    width: 100%;
   }
 }

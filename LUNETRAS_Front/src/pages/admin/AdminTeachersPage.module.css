@@ -1,0 +1,378 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  background: linear-gradient(180deg, #e9f3ff 0%, #d8ebff 100%);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 24px 14px;
+  background-color: #f5f9ff;
+  border-right: 1px solid #d9e6fb;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #4d80e3;
+  font-weight: 700;
+}
+
+.brand img {
+  width: 40px;
+  height: 40px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav button {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background-color: transparent;
+  color: #5f6d85;
+  padding: 12px;
+  text-align: left;
+  font-size: 0.96rem;
+  cursor: pointer;
+}
+
+.nav .active {
+  background-color: #e3edff;
+  color: #4e7de2;
+  font-weight: 600;
+}
+
+.logout {
+  margin-top: auto;
+  border: 1px solid #d6e0f3;
+  border-radius: 12px;
+  background-color: #ffffff;
+  color: #5c6a82;
+  padding: 11px;
+  cursor: pointer;
+}
+
+.content {
+  padding: clamp(18px, 2vw, 26px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.contentBlur {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header h1 {
+  margin: 14px 0 0;
+  color: #1f293b;
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+}
+
+.userBadge {
+  min-width: 220px;
+  border-radius: 28px;
+  background-color: #f5f8ff;
+  border: 1px solid #d6e5fc;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: #23324b;
+}
+
+.userBadge small {
+  color: #74839c;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.searchRow {
+  flex: 1;
+  min-width: 260px;
+}
+
+.searchRow input {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid #d4e1f5;
+  padding: 0 14px;
+  font-size: 0.95rem;
+}
+
+.filterSelect {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px solid #d4e1f5;
+  padding: 0 12px;
+  background-color: #ffffff;
+  color: #32445f;
+  font-weight: 600;
+}
+
+.primaryAction,
+.secondaryAction,
+.dangerAction {
+  min-height: 42px;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryAction {
+  border: none;
+  background: linear-gradient(135deg, #628eea 0%, #4f79d9 100%);
+  color: #ffffff;
+}
+
+.secondaryAction {
+  border: 1px solid #cddaf2;
+  background-color: #f8fbff;
+  color: #5a6880;
+}
+
+.dangerAction {
+  border: 1px solid #f1c5c5;
+  background-color: #fff4f4;
+  color: #bf4747;
+}
+
+.ghostAction {
+  border: 1px dashed #c7d4eb;
+  background-color: #f7faff;
+  color: #5c6e8f;
+  min-height: 42px;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actionGroup {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.tableShell {
+  border-radius: 18px;
+  overflow: auto;
+  border: 1px solid #d6e3f8;
+  background-color: #f8fbff;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.1fr) minmax(220px, 1.2fr) minmax(120px, 0.8fr) minmax(90px, 0.6fr) minmax(260px, 1.1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  min-width: 930px;
+}
+
+.tableHeader {
+  background-color: #eef3fb;
+  color: #61708a;
+  font-weight: 700;
+}
+
+.tableRow {
+  border-top: 1px solid #e3ebf7;
+  background-color: #ffffff;
+}
+
+.profileTag {
+  width: fit-content;
+  border-radius: 8px;
+  padding: 4px 10px;
+  background-color: #edf4ff;
+  color: #3b67bf;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.statusActive,
+.statusInactive {
+  width: fit-content;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.statusActive {
+  background-color: #e5faec;
+  color: #2f9960;
+}
+
+.statusInactive {
+  background-color: #f2f4f8;
+  color: #74839c;
+}
+
+.empty {
+  margin: 20px;
+  text-align: center;
+  color: #6f7f99;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(20, 30, 44, 0.28);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  z-index: 30;
+  padding: 16px;
+}
+
+.modalCard {
+  width: min(760px, 100%);
+  border-radius: 16px;
+  border: 1px solid #cedcf4;
+  background-color: #f8fbff;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  color: #223047;
+}
+
+.modalHeader button {
+  border: 1px solid #d5e0f5;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #5a6880;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.modalGrid label {
+  display: grid;
+  gap: 6px;
+  color: #495a76;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.modalGrid input {
+  min-height: 40px;
+  border: 1px solid #d4e1f5;
+  border-radius: 10px;
+  padding: 0 12px;
+  background-color: #ffffff;
+}
+
+.modalGrid select {
+  min-height: 40px;
+  border: 1px solid #d4e1f5;
+  border-radius: 10px;
+  padding: 0 12px;
+  background-color: #ffffff;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.formError {
+  margin: 0;
+  color: #c24747;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #d9e6fb;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchRow {
+    min-width: 0;
+  }
+
+  .filterSelect,
+  .primaryAction,
+  .secondaryAction {
+    width: 100%;
+  }
+
+  .tableHeader,
+  .tableRow {
+    min-width: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .actionGroup {
+    flex-direction: column;
+  }
+
+  .modalGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .userBadge {
+    min-width: 0;
+    width: 100%;
+  }
+}

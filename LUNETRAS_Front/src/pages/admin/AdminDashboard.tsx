@@ -23,7 +23,12 @@ interface AdminDashboardProps {
   onRemoveClass: (classId: string) => void;
   onOpenClass: (classId: string) => void;
   onGoToClasses: () => void;
+  onGoToTeachers?: () => void;
   onGoToReports: () => void;
+  pageTitle?: string;
+  userRoleLabel?: string;
+  showTeachersNav?: boolean;
+  allowRemoveClass?: boolean;
 }
 
 function todayLabel() {
@@ -43,7 +48,12 @@ export function AdminDashboard({
   onRemoveClass,
   onOpenClass,
   onGoToClasses,
+  onGoToTeachers,
   onGoToReports,
+  pageTitle = 'Painel do Administrador',
+  userRoleLabel = 'Administrador(a)',
+  showTeachersNav = true,
+  allowRemoveClass = true,
 }: AdminDashboardProps) {
   const [animationProgress, setAnimationProgress] = useState(0);
 
@@ -54,7 +64,7 @@ export function AdminDashboard({
         .filter((item) => item.pendencias > 0)
         .map((item) => ({
           id: item.id,
-          text: `Corrigir ${item.pendencias} avaliações da turma ${item.nome}`,
+          text: `Corrigir ${item.pendencias} avaliações da turma ${item.nome} (responsável: ${item.professor ?? 'A definir'})`,
           urgency: item.pendencias >= 4 ? 'URGENTE' : 'NORMAL',
         })),
     [classes],
@@ -91,6 +101,7 @@ export function AdminDashboard({
         <nav className={styles.nav}>
           <button className={styles.active}>Painel</button>
           <button onClick={onGoToClasses}>Minhas Turmas</button>
+          {showTeachersNav ? <button onClick={onGoToTeachers}>Professores</button> : null}
           <button onClick={onGoToReports}>Relatórios</button>
         </nav>
 
@@ -102,12 +113,12 @@ export function AdminDashboard({
       <section className={styles.content}>
         <header className={styles.header}>
           <div>
-            <h1>Painel do Administrador</h1>
+            <h1>{pageTitle}</h1>
             <p>Visão geral do dia {todayLabel()}</p>
           </div>
           <div className={styles.userBadge}>
             <span>Olá, {userName}</span>
-            <small>Administrador(a)</small>
+            <small>{userRoleLabel}</small>
           </div>
         </header>
 
@@ -186,9 +197,11 @@ export function AdminDashboard({
                       <button type="button" className={styles.openClassButton} onClick={() => onOpenClass(item.id)}>
                         Ver turma
                       </button>
-                      <button type="button" className={styles.removeClassButton} onClick={() => onRemoveClass(item.id)}>
-                        Remover turma
-                      </button>
+                      {allowRemoveClass ? (
+                        <button type="button" className={styles.removeClassButton} onClick={() => onRemoveClass(item.id)}>
+                          Remover turma
+                        </button>
+                      ) : null}
                     </div>
                   </article>
                 );
