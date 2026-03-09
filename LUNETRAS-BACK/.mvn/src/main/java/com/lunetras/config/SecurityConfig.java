@@ -25,7 +25,7 @@ public class SecurityConfig {
 
     private final UsuarioDetailsService usuarioDetailsService;
 
-    @Value("${APP_CORS_ALLOWED_ORIGINS:http://localhost:4173}")
+    @Value("${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}")
     private String corsAllowedOrigins;
 
     public SecurityConfig(UsuarioDetailsService usuarioDetailsService) {
