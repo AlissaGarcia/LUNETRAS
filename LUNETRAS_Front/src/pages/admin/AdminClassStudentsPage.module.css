@@ -71,12 +71,21 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .header h1 {
   margin: 14px 0 0;
   color: #1f293b;
   font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+}
+
+.classTeacherLabel {
+  margin: 4px 0 0;
+  color: #6e7c93;
+  font-size: 0.92rem;
+  font-weight: 600;
 }
 
 .userBadge {
@@ -100,16 +109,20 @@
   justify-content: space-between;
   gap: 10px;
   margin-top: 8px;
+  flex-wrap: wrap;
 }
 
 .filters {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: min(520px, 100%);
 }
 
 .toolbar select {
   min-height: 42px;
-  min-width: 260px;
+  min-width: clamp(200px, 26vw, 260px);
   border: 1px solid #d6e2f5;
   border-radius: 12px;
   padding: 0 10px;
@@ -120,6 +133,7 @@
 .actions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .contentBlur {
@@ -354,6 +368,13 @@
   gap: 8px;
 }
 
+.formError {
+  margin: 0;
+  color: #c24747;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
 .studentDetailsModal {
   width: min(980px, 100%);
   gap: 16px;
@@ -439,6 +460,41 @@
   resize: vertical;
 }
 
+.historySection h3 {
+  margin: 0 0 10px;
+  color: #25344d;
+}
+
+.historyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.historyCard {
+  border: 1px solid #d8e4f8;
+  border-radius: 12px;
+  background-color: #ffffff;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.historyCard strong {
+  color: #2c3b55;
+}
+
+.historyCard span {
+  color: #3f61a8;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.historyCard small {
+  color: #6f7f99;
+  font-size: 0.82rem;
+}
+
 @media (max-width: 980px) {
   .page {
     grid-template-columns: 1fr;
@@ -467,6 +523,10 @@
     flex: 1;
   }
 
+  .dangerAction {
+    flex: 1;
+  }
+
   .tableHeader,
   .tableRow {
     grid-template-columns: 1fr;
@@ -478,5 +538,35 @@
 
   .levelOptions {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .historyGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .userBadge {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .toolbar select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .primaryAction,
+  .secondaryAction,
+  .dangerAction {
+    width: 100%;
+  }
+
+  .levelOptions {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import styles from './AdminClassStudentsPage.module.css';
+import type { Bimester, StudentEvaluation } from './evaluations';
 import { stageLabel, type ClassRoom, type LiteracyStage } from './metrics';
 import type { Student } from './mockData';
 import type { CreateClassInput, StudentStatus } from './types';
@@ -9,19 +10,28 @@ interface AdminClassStudentsPageProps {
   classes: ClassRoom[];
   classRoom: ClassRoom | null;
   students: Student[];
+  evaluationsByStudent: Record<string, StudentEvaluation[]>;
   onSelectClass: (classId: string) => void;
-  onCreateClass: (input: CreateClassInput) => void;
-  onAddStudentToClass: (classId: string, payload: { nome: string; dataNascimento: string; nivel: LiteracyStage }) => void;
+  onCreateClass: (input: CreateClassInput) => Promise<boolean>;
+  onAddStudentToClass: (
+    classId: string,
+    payload: { nome: string; dataNascimento: string; nivel: LiteracyStage },
+  ) => Promise<boolean>;
   onUpdateStudentInClass: (
     classId: string,
     studentId: string,
-    payload: { nivel: LiteracyStage; observacoes: string; status: StudentStatus },
+    payload: { nivel: LiteracyStage; observacoes: string; status: StudentStatus; bimestre: Bimester },
   ) => void;
   onRemoveClass: (classId: string) => void;
   onRemoveStudentFromClass: (classId: string, studentId: string) => void;
   onBackToDashboard: () => void;
+  onGoToTeachers?: () => void;
   onGoToReports: () => void;
   onLogout: () => void;
+  showTeachersNav?: boolean;
+  allowClassManagement?: boolean;
+  allowStudentRemoval?: boolean;
+  userRoleLabel?: string;
 }
 
 type FilterMode = 'ALL' | 'PENDING' | 'EVALUATED';
@@ -36,6 +46,7 @@ const WRITING_LEVEL_OPTIONS: LiteracyStage[] = [
   'ALFABETICO',
   'ORTOGRAFICO',
 ];
+const BIMESTER_OPTIONS: Bimester[] = ['B1', 'B2', 'B3', 'B4'];
 
 function formatBirthDate(value: string) {
   const [year, month, day] = value.split('-');
@@ -44,15 +55,11 @@ function formatBirthDate(value: string) {
 
 function statusMeta(status: Student['status']) {
   switch (status) {
-    case 'NEEDS_ATTENTION':
-      return { text: 'Necessita de atenção', tone: 'warn' };
-    case 'MONITORING':
-      return { text: 'Em acompanhamento', tone: 'info' };
-    case 'PENDING':
-      return { text: 'Avaliação pendente', tone: 'warn' };
-    case 'EVALUATED':
+    case 'SEM_AVALIACAO':
+      return { text: 'Sem avaliação', tone: 'warn' };
+    case 'AVALIADO':
       return { text: 'Avaliado', tone: 'ok' };
-    case 'REASSESS':
+    case 'REAVALIAR':
       return { text: 'Reavaliar', tone: 'info' };
     default:
       return { text: 'Sem status', tone: 'info' };
@@ -64,6 +71,7 @@ export function AdminClassStudentsPage({
   classes,
   classRoom,
   students,
+  evaluationsByStudent,
   onSelectClass,
   onCreateClass,
   onAddStudentToClass,
@@ -71,8 +79,13 @@ export function AdminClassStudentsPage({
   onRemoveClass,
   onRemoveStudentFromClass,
   onBackToDashboard,
+  onGoToTeachers,
   onGoToReports,
   onLogout,
+  showTeachersNav = true,
+  allowClassManagement = true,
+  allowStudentRemoval = true,
+  userRoleLabel = 'Administrador(a)',
 }: AdminClassStudentsPageProps) {
   const [search, setSearch] = useState('');
   const [filterMode, setFilterMode] = useState<FilterMode>('ALL');
@@ -81,12 +94,16 @@ export function AdminClassStudentsPage({
   const [isStudentDetailsModalOpen, setIsStudentDetailsModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [selectedStudentLevel, setSelectedStudentLevel] = useState<LiteracyStage>('SEM_DADOS');
-  const [selectedStudentStatus, setSelectedStudentStatus] = useState<StudentStatus>('PENDING');
+  const [selectedStudentStatus, setSelectedStudentStatus] = useState<StudentStatus>('SEM_AVALIACAO');
   const [selectedStudentNotes, setSelectedStudentNotes] = useState('');
+  const [selectedBimester, setSelectedBimester] = useState<Bimester>('B1');
 
   const [newClassName, setNewClassName] = useState('');
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentBirthDate, setNewStudentBirthDate] = useState('');
+  const [formError, setFormError] = useState('');
+  const [isCreatingClass, setIsCreatingClass] = useState(false);
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
 
   const visibleStudents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -98,11 +115,11 @@ export function AdminClassStudentsPage({
       }
 
       if (filterMode === 'PENDING') {
-        return student.status !== 'EVALUATED';
+        return student.status !== 'AVALIADO';
       }
 
       if (filterMode === 'EVALUATED') {
-        return student.status === 'EVALUATED';
+        return student.status === 'AVALIADO';
       }
 
       return true;
@@ -113,35 +130,70 @@ export function AdminClassStudentsPage({
     () => students.find((student) => student.id === selectedStudentId) ?? null,
     [selectedStudentId, students],
   );
+  const selectedStudentEvaluations = useMemo(
+    () => (selectedStudentId ? evaluationsByStudent[selectedStudentId] ?? [] : []),
+    [evaluationsByStudent, selectedStudentId],
+  );
 
-  function handleCreateClass() {
-    if (!newClassName.trim()) {
+  function applyEvaluationForBimester(studentId: string, bimester: Bimester, fallbackStudent: Student) {
+    const evaluation = (evaluationsByStudent[studentId] ?? []).find((item) => item.bimestre === bimester);
+
+    if (!evaluation) {
+      setSelectedStudentLevel(fallbackStudent.nivel);
+      setSelectedStudentStatus(fallbackStudent.status);
+      setSelectedStudentNotes(fallbackStudent.observacoes ?? '');
       return;
     }
 
-    onCreateClass({
+    setSelectedStudentLevel(evaluation.nivel);
+    setSelectedStudentStatus(evaluation.status);
+    setSelectedStudentNotes(evaluation.observacoes ?? '');
+  }
+
+  async function handleCreateClass() {
+    if (!newClassName.trim()) {
+      setFormError('Informe o nome da turma.');
+      return;
+    }
+
+    setIsCreatingClass(true);
+    setFormError('');
+    const created = await onCreateClass({
       nome: newClassName.trim(),
       professor: 'A definir',
     });
 
-    setNewClassName('');
-    setIsCreateClassModalOpen(false);
+    if (created) {
+      setNewClassName('');
+      setIsCreateClassModalOpen(false);
+    } else {
+      setFormError('Não foi possível criar a turma no backend. Verifique se a API está ativa.');
+    }
+    setIsCreatingClass(false);
   }
 
-  function handleAddStudentToCurrentClass() {
+  async function handleAddStudentToCurrentClass() {
     if (!classRoom || !newStudentName.trim() || !newStudentBirthDate) {
+      setFormError('Preencha nome e data de nascimento do aluno.');
       return;
     }
 
-    onAddStudentToClass(classRoom.id, {
+    setIsAddingStudent(true);
+    setFormError('');
+    const added = await onAddStudentToClass(classRoom.id, {
       nome: newStudentName.trim(),
       dataNascimento: newStudentBirthDate,
       nivel: 'SEM_DADOS',
     });
 
-    setNewStudentName('');
-    setNewStudentBirthDate('');
-    setIsAddStudentModalOpen(false);
+    if (added) {
+      setNewStudentName('');
+      setNewStudentBirthDate('');
+      setIsAddStudentModalOpen(false);
+    } else {
+      setFormError('Não foi possível adicionar o aluno no backend.');
+    }
+    setIsAddingStudent(false);
   }
 
   function handleRemoveCurrentClass() {
@@ -159,10 +211,19 @@ export function AdminClassStudentsPage({
 
   function openStudentDetails(student: Student) {
     setSelectedStudentId(student.id);
-    setSelectedStudentLevel(student.nivel);
-    setSelectedStudentStatus(student.status);
-    setSelectedStudentNotes(student.observacoes ?? '');
+    setSelectedBimester('B1');
+    applyEvaluationForBimester(student.id, 'B1', student);
     setIsStudentDetailsModalOpen(true);
+  }
+
+  function handleBimesterChange(bimester: Bimester) {
+    setSelectedBimester(bimester);
+
+    if (!selectedStudentId || !selectedStudent) {
+      return;
+    }
+
+    applyEvaluationForBimester(selectedStudentId, bimester, selectedStudent);
   }
 
   function handleSaveStudentDetails() {
@@ -174,6 +235,7 @@ export function AdminClassStudentsPage({
       nivel: selectedStudentLevel,
       observacoes: selectedStudentNotes.trim(),
       status: selectedStudentStatus,
+      bimestre: selectedBimester,
     });
 
     setIsStudentDetailsModalOpen(false);
@@ -190,6 +252,7 @@ export function AdminClassStudentsPage({
         <nav className={styles.nav}>
           <button onClick={onBackToDashboard}>Painel</button>
           <button className={styles.active}>Minhas Turmas</button>
+          {showTeachersNav ? <button onClick={onGoToTeachers}>Professores</button> : null}
           <button onClick={onGoToReports}>Relatórios</button>
         </nav>
 
@@ -203,10 +266,13 @@ export function AdminClassStudentsPage({
           className={isCreateClassModalOpen || isAddStudentModalOpen || isStudentDetailsModalOpen ? styles.contentBlur : undefined}
         >
           <header className={styles.header}>
-            <h1>Turma {classRoom?.nome ?? '-'}</h1>
+            <div>
+              <h1>Turma {classRoom?.nome ?? '-'}</h1>
+              <p className={styles.classTeacherLabel}>Professor(a): {classRoom?.professor ?? 'A definir'}</p>
+            </div>
             <div className={styles.userBadge}>
               <span>Olá, {userName}</span>
-              <small>Administrador(a)</small>
+              <small>{userRoleLabel}</small>
             </div>
           </header>
 
@@ -228,31 +294,32 @@ export function AdminClassStudentsPage({
             </div>
 
             <div className={styles.actions}>
-              <button type="button" className={styles.primaryAction}>
-                + Nova Avaliação
-              </button>
-              <button type="button" className={styles.secondaryAction} onClick={onGoToReports}>
+              <button type="button" className={styles.primaryAction} onClick={onGoToReports}>
                 Gerar Relatório
               </button>
-              <button
-                type="button"
-                className={styles.secondaryAction}
-                onClick={() => setIsAddStudentModalOpen(true)}
-                disabled={!classRoom}
-              >
-                Adicionar aluno
-              </button>
-              <button
-                type="button"
-                className={styles.dangerAction}
-                onClick={handleRemoveCurrentClass}
-                disabled={!classRoom}
-              >
-                Remover turma
-              </button>
-              <button type="button" className={styles.primaryAction} onClick={() => setIsCreateClassModalOpen(true)}>
-                Criar turma
-              </button>
+              {allowClassManagement ? (
+                <>
+                  <button
+                    type="button"
+                    className={styles.secondaryAction}
+                    onClick={() => setIsAddStudentModalOpen(true)}
+                    disabled={!classRoom}
+                  >
+                    Adicionar aluno
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.dangerAction}
+                    onClick={handleRemoveCurrentClass}
+                    disabled={!classRoom}
+                  >
+                    Remover turma
+                  </button>
+                  <button type="button" className={styles.primaryAction} onClick={() => setIsCreateClassModalOpen(true)}>
+                    Criar turma
+                  </button>
+                </>
+              ) : null}
             </div>
           </div>
 
@@ -285,18 +352,20 @@ export function AdminClassStudentsPage({
                   <span className={styles.levelTag}>{stageLabel(student.nivel)}</span>
                   <div className={styles.statusCell}>
                     <span className={`${styles.statusTag} ${styles[`status_${status.tone}`]}`}>{status.text}</span>
-                    <button
-                      type="button"
-                      className={styles.removeStudentButton}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                         if (classRoom) {
-                                                  onRemoveStudentFromClass(classRoom.id, student.id);
-                                                }
-                      }}
-                    >
-                      Remover
-                    </button>
+                    {allowStudentRemoval ? (
+                      <button
+                        type="button"
+                        className={styles.removeStudentButton}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (classRoom) {
+                            onRemoveStudentFromClass(classRoom.id, student.id);
+                          }
+                        }}
+                      >
+                        Remover
+                      </button>
+                    ) : null}
                   </div>
                 </article>
               );
@@ -306,7 +375,7 @@ export function AdminClassStudentsPage({
           </section>
         </div>
 
-        {isCreateClassModalOpen ? (
+        {allowClassManagement && isCreateClassModalOpen ? (
           <div className={styles.modalOverlay} onClick={() => setIsCreateClassModalOpen(false)}>
             <article className={styles.modalCard} onClick={(event) => event.stopPropagation()}>
               <header className={styles.modalHeader}>
@@ -319,27 +388,24 @@ export function AdminClassStudentsPage({
               <div className={styles.modalGrid}>
                 <label>
                   Nome da turma
-                  <input
-                    value={newClassName}
-                    onChange={(event) => setNewClassName(event.target.value)}
-                    placeholder="Ex.: 2 Ano B"
-                  />
+                  <input value={newClassName} onChange={(event) => setNewClassName(event.target.value)} placeholder="" />
                 </label>
               </div>
+              {formError ? <p className={styles.formError}>{formError}</p> : null}
 
               <footer className={styles.modalFooter}>
                 <button type="button" className={styles.secondaryAction} onClick={() => setIsCreateClassModalOpen(false)}>
                   Cancelar
                 </button>
-                <button type="button" className={styles.primaryAction} onClick={handleCreateClass}>
-                  Criar turma
+                <button type="button" className={styles.primaryAction} onClick={handleCreateClass} disabled={isCreatingClass}>
+                  {isCreatingClass ? 'Criando...' : 'Criar turma'}
                 </button>
               </footer>
             </article>
           </div>
         ) : null}
 
-        {isAddStudentModalOpen ? (
+        {allowClassManagement && isAddStudentModalOpen ? (
           <div className={styles.modalOverlay} onClick={() => setIsAddStudentModalOpen(false)}>
             <article className={styles.modalCard} onClick={(event) => event.stopPropagation()}>
               <header className={styles.modalHeader}>
@@ -368,13 +434,14 @@ export function AdminClassStudentsPage({
                 </label>
                 <p>O nível de escrita inicial será salvo como "Sem dados".</p>
               </div>
+              {formError ? <p className={styles.formError}>{formError}</p> : null}
 
               <footer className={styles.modalFooter}>
                 <button type="button" className={styles.secondaryAction} onClick={() => setIsAddStudentModalOpen(false)}>
                   Cancelar
                 </button>
-                <button type="button" className={styles.primaryAction} onClick={handleAddStudentToCurrentClass}>
-                  Registrar aluno
+                <button type="button" className={styles.primaryAction} onClick={handleAddStudentToCurrentClass} disabled={isAddingStudent}>
+                  {isAddingStudent ? 'Registrando...' : 'Registrar aluno'}
                 </button>
               </footer>
             </article>
@@ -402,6 +469,20 @@ export function AdminClassStudentsPage({
               </section>
 
               <section className={styles.levelSection}>
+                <h3>Bimestre</h3>
+                <select
+                  className={styles.statusSelect}
+                  value={selectedBimester}
+                  onChange={(event) => handleBimesterChange(event.target.value as Bimester)}
+                >
+                  <option value="B1">1º Bimestre</option>
+                  <option value="B2">2º Bimestre</option>
+                  <option value="B3">3º Bimestre</option>
+                  <option value="B4">4º Bimestre</option>
+                </select>
+              </section>
+
+              <section className={styles.levelSection}>
                 <h3>Nível de escrita</h3>
                 <div className={styles.levelOptions}>
                   {WRITING_LEVEL_OPTIONS.map((level) => (
@@ -424,11 +505,9 @@ export function AdminClassStudentsPage({
                   value={selectedStudentStatus}
                   onChange={(event) => setSelectedStudentStatus(event.target.value as StudentStatus)}
                 >
-                  <option value="NEEDS_ATTENTION">Necessita de atenção</option>
-                  <option value="MONITORING">Em acompanhamento</option>
-                  <option value="PENDING">Avaliação pendente</option>
-                  <option value="EVALUATED">Avaliado</option>
-                  <option value="REASSESS">Reavaliar</option>
+                  <option value="SEM_AVALIACAO">Sem avaliação</option>
+                  <option value="AVALIADO">Avaliado</option>
+                  <option value="REAVALIAR">Reavaliar</option>
                 </select>
               </section>
 
@@ -439,6 +518,38 @@ export function AdminClassStudentsPage({
                   onChange={(event) => setSelectedStudentNotes(event.target.value)}
                   placeholder="Registre observações sobre o progresso do aluno..."
                 />
+              </section>
+
+              <section className={styles.historySection}>
+                <h3>Histórico por bimestre</h3>
+                <div className={styles.historyGrid}>
+                  {BIMESTER_OPTIONS.map((bimester) => {
+                    const entry = selectedStudentEvaluations.find((item) => item.bimestre === bimester);
+
+                    return (
+                      <article key={bimester} className={styles.historyCard}>
+                        <strong>
+                          {bimester === 'B1'
+                            ? '1º Bimestre'
+                            : bimester === 'B2'
+                              ? '2º Bimestre'
+                              : bimester === 'B3'
+                                ? '3º Bimestre'
+                                : '4º Bimestre'}
+                        </strong>
+                        {entry ? (
+                          <>
+                            <span>{stageLabel(entry.nivel)}</span>
+                            <small>{statusMeta(entry.status).text}</small>
+                            <small>{formatBirthDate(entry.dataAvaliacao)}</small>
+                          </>
+                        ) : (
+                          <small>Sem avaliação registrada</small>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
               </section>
 
               <footer className={styles.modalFooter}>
@@ -452,6 +563,7 @@ export function AdminClassStudentsPage({
             </article>
           </div>
         ) : null}
+
       </section>
     </main>
   );

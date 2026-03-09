@@ -1,6 +1,6 @@
 import type { LiteracyStage } from './metrics';
 
-export type StudentStatus = 'NEEDS_ATTENTION' | 'MONITORING' | 'PENDING' | 'EVALUATED' | 'REASSESS';
+export type StudentStatus = 'SEM_AVALIACAO' | 'AVALIADO' | 'REAVALIAR';
 
 export interface NewStudentInput {
   nome: string;
