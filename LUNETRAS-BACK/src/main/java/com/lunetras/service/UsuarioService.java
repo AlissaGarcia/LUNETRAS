@@ -1,9 +1,9 @@
 package com.lunetras.service;
 
+import com.lunetras.dto.ProfessorCadastroResponse;
 import com.lunetras.model.Perfil;
 import com.lunetras.model.Usuario;
 import com.lunetras.repository.UsuarioRepository;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,7 @@ public class UsuarioService {
     }
 
     // RF004 + RF005
-    public Usuario cadastrarProfessor(String nome, String email) {
+    public ProfessorCadastroResponse cadastrarProfessor(String nome, String email) {
 
         if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email já cadastrado.");
@@ -40,7 +40,14 @@ public class UsuarioService {
 
         Usuario salvo = usuarioRepository.save(usuario);
 
-        return salvo;
+        ProfessorCadastroResponse response = new ProfessorCadastroResponse();
+        response.setId(salvo.getId());
+        response.setNome(salvo.getNome());
+        response.setEmail(salvo.getEmail());
+        response.setPerfil(salvo.getPerfil() != null ? salvo.getPerfil().name() : null);
+        response.setAtivo(salvo.getAtivo());
+        response.setSenhaInicial(senhaInicial);
+        return response;
     }
 
 
@@ -94,3 +101,4 @@ public class UsuarioService {
                 .substring(0, 8);
     }
 }
+

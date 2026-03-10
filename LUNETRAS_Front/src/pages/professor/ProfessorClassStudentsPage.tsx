@@ -18,7 +18,7 @@ interface ProfessorClassStudentsPageProps {
   ) => void;
   onBackToDashboard: () => void;
   onGoToReports: () => void;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
 }
 
 export function ProfessorClassStudentsPage(props: ProfessorClassStudentsPageProps) {

@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import styles from './AdminTeachersPage.module.css';
 import type { Teacher } from '../../services/teachers';
 import type { ClassRoom } from './metrics';
@@ -7,13 +7,13 @@ interface AdminTeachersPageProps {
   userName: string;
   teachers: Teacher[];
   classes: ClassRoom[];
-  onCreateTeacher: (payload: { nome: string; email: string; senha: string }) => Promise<boolean>;
+  onCreateTeacher: (payload: { nome: string; email: string }) => Promise<{ ok: boolean; senhaInicial?: string }>;
   onSetTeacherActive: (teacherId: string, shouldActivate: boolean) => Promise<boolean>;
   onAssignTeacherToClass: (classId: string, teacherId: string) => Promise<boolean>;
   onBackToDashboard: () => void;
   onGoToClasses: () => void;
   onGoToReports: () => void;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
 }
 
 type FilterMode = 'ALL' | 'ACTIVE' | 'INACTIVE';
@@ -35,13 +35,17 @@ export function AdminTeachersPage({
   const [hiddenTeacherIds, setHiddenTeacherIds] = useState<string[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+
   const [newTeacherName, setNewTeacherName] = useState('');
   const [newTeacherEmail, setNewTeacherEmail] = useState('');
-  const [newTeacherPassword, setNewTeacherPassword] = useState('');
   const [assignClassId, setAssignClassId] = useState('');
   const [assignTeacherId, setAssignTeacherId] = useState('');
   const [formError, setFormError] = useState('');
   const [isCreatingTeacher, setIsCreatingTeacher] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const visibleTeachers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -68,21 +72,20 @@ export function AdminTeachersPage({
   }, [filterMode, hiddenTeacherIds, search, teachers]);
 
   async function handleCreateTeacher() {
-    if (!newTeacherName.trim() || !newTeacherEmail.trim() || !newTeacherPassword.trim()) {
-      setFormError('Preencha nome, e-mail e senha para cadastrar o professor.');
+    if (!newTeacherName.trim() || !newTeacherEmail.trim()) {
+      setFormError('Preencha nome e e-mail para cadastrar o professor.');
       return;
     }
 
     setIsCreatingTeacher(true);
     setFormError('');
 
-    const created = await onCreateTeacher({
+    const result = await onCreateTeacher({
       nome: newTeacherName.trim(),
       email: newTeacherEmail.trim(),
-      senha: newTeacherPassword.trim(),
     });
 
-    if (!created) {
+    if (!result.ok) {
       setFormError('Não foi possível cadastrar o professor neste momento.');
       setIsCreatingTeacher(false);
       return;
@@ -90,9 +93,38 @@ export function AdminTeachersPage({
 
     setNewTeacherName('');
     setNewTeacherEmail('');
-    setNewTeacherPassword('');
     setIsCreateModalOpen(false);
     setIsCreatingTeacher(false);
+
+    setGeneratedPassword(result.senhaInicial ?? null);
+    setCopyStatus('idle');
+    setIsPasswordModalOpen(true);
+  }
+
+  async function handleCopyPassword() {
+    if (!generatedPassword) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(generatedPassword);
+      setCopyStatus('copied');
+    } catch {
+      setCopyStatus('error');
+    }
+  }
+
+  async function handleLogoutClick() {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    try {
+      await Promise.resolve(onLogout());
+    } finally {
+      setIsLoggingOut(false);
+    }
   }
 
   async function handleToggleTeacherStatus(teacher: Teacher) {
@@ -128,6 +160,8 @@ export function AdminTeachersPage({
     setIsAssignModalOpen(false);
   }
 
+  const isAnyModalOpen = isCreateModalOpen || isAssignModalOpen || isPasswordModalOpen;
+
   return (
     <main className={styles.page}>
       <aside className={styles.sidebar}>
@@ -143,13 +177,13 @@ export function AdminTeachersPage({
           <button onClick={onGoToReports}>Relatórios</button>
         </nav>
 
-        <button className={styles.logout} onClick={onLogout}>
-          Sair
+        <button className={styles.logout} onClick={handleLogoutClick} disabled={isLoggingOut}>
+          {isLoggingOut ? 'Saindo...' : 'Sair'}
         </button>
       </aside>
 
       <section className={styles.content}>
-        <div className={isCreateModalOpen || isAssignModalOpen ? styles.contentBlur : undefined}>
+        <div className={isAnyModalOpen ? styles.contentBlur : undefined}>
           <header className={styles.header}>
             <h1>Professores</h1>
             <div className={styles.userBadge}>
@@ -222,9 +256,7 @@ export function AdminTeachersPage({
               </article>
             ))}
 
-            {visibleTeachers.length === 0 ? (
-              <p className={styles.empty}>Nenhum professor cadastrado ainda.</p>
-            ) : null}
+            {visibleTeachers.length === 0 ? <p className={styles.empty}>Nenhum professor cadastrado ainda.</p> : null}
           </section>
         </div>
 
@@ -256,15 +288,7 @@ export function AdminTeachersPage({
                     placeholder="carla@escola.com"
                   />
                 </label>
-                <label>
-                  Senha
-                  <input
-                    type="password"
-                    value={newTeacherPassword}
-                    onChange={(event) => setNewTeacherPassword(event.target.value)}
-                    placeholder="Defina uma senha"
-                  />
-                </label>
+                <p>A senha inicial será gerada automaticamente pelo sistema.</p>
               </div>
 
               {formError ? <p className={styles.formError}>{formError}</p> : null}
@@ -336,7 +360,78 @@ export function AdminTeachersPage({
             </article>
           </div>
         ) : null}
+
+        {isPasswordModalOpen ? (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => {
+              setIsPasswordModalOpen(false);
+              setGeneratedPassword(null);
+              setCopyStatus('idle');
+            }}
+          >
+            <article className={styles.modalCard} onClick={(event) => event.stopPropagation()}>
+              <header className={styles.modalHeader}>
+                <h2>Senha inicial</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPasswordModalOpen(false);
+                    setGeneratedPassword(null);
+                    setCopyStatus('idle');
+                  }}
+                >
+                  X
+                </button>
+              </header>
+
+              <div className={styles.modalGrid}>
+                {generatedPassword ? (
+                  <>
+                    <p>
+                      Esta é a senha inicial gerada para o professor. Anote e envie para ele conseguir fazer o primeiro
+                      login.
+                    </p>
+                    <label>
+                      Senha gerada
+                      <input value={generatedPassword} readOnly />
+                    </label>
+                    <div className={styles.actionGroup} style={{ justifyContent: 'flex-start' }}>
+                      <button type="button" className={styles.primaryAction} onClick={handleCopyPassword}>
+                        Copiar senha
+                      </button>
+                      {copyStatus === 'copied' ? <span className={styles.copyHint}>Copiado!</span> : null}
+                      {copyStatus === 'error' ? (
+                        <span className={styles.copyHint}>Não foi possível copiar. Copie manualmente.</span>
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <p>
+                    Professor cadastrado, mas a API não retornou a senha inicial. Verifique o endpoint de cadastro de
+                    professores no backend.
+                  </p>
+                )}
+              </div>
+
+              <footer className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.primaryAction}
+                  onClick={() => {
+                    setIsPasswordModalOpen(false);
+                    setGeneratedPassword(null);
+                    setCopyStatus('idle');
+                  }}
+                >
+                  Entendi
+                </button>
+              </footer>
+            </article>
+          </div>
+        ) : null}
       </section>
     </main>
   );
 }
+

@@ -27,6 +27,17 @@ export interface DashboardSummary {
 
 export type ProgressTone = 'LOW' | 'MEDIUM' | 'HIGH';
 
+export const STAGE_COLORS: Record<LiteracyStage, string> = {
+  SEM_DADOS: '#9ba6ba',
+  ICONICA: '#b392f0',
+  GARATUJA: '#f59e0b',
+  PRE_SILABICO: '#eab308',
+  SILABICO_SEM_VALOR_SONORO: '#60a5fa',
+  SILABICO_COM_VALOR_SONORO: '#3b82f6',
+  ALFABETICO: '#34d399',
+  ORTOGRAFICO: '#10b981',
+};
+
 export function literacyStageFactor(stage: LiteracyStage): number {
   switch (stage) {
     case 'SEM_DADOS':

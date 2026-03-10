@@ -27,7 +27,7 @@ interface AdminClassStudentsPageProps {
   onBackToDashboard: () => void;
   onGoToTeachers?: () => void;
   onGoToReports: () => void;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
   showTeachersNav?: boolean;
   allowClassManagement?: boolean;
   allowStudentRemoval?: boolean;
@@ -104,6 +104,7 @@ export function AdminClassStudentsPage({
   const [formError, setFormError] = useState('');
   const [isCreatingClass, setIsCreatingClass] = useState(false);
   const [isAddingStudent, setIsAddingStudent] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const visibleStudents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -134,6 +135,19 @@ export function AdminClassStudentsPage({
     () => (selectedStudentId ? evaluationsByStudent[selectedStudentId] ?? [] : []),
     [evaluationsByStudent, selectedStudentId],
   );
+
+  async function handleLogoutClick() {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    try {
+      await Promise.resolve(onLogout());
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
 
   function applyEvaluationForBimester(studentId: string, bimester: Bimester, fallbackStudent: Student) {
     const evaluation = (evaluationsByStudent[studentId] ?? []).find((item) => item.bimestre === bimester);
@@ -256,8 +270,8 @@ export function AdminClassStudentsPage({
           <button onClick={onGoToReports}>Relatórios</button>
         </nav>
 
-        <button className={styles.logout} onClick={onLogout}>
-          Sair
+        <button className={styles.logout} onClick={handleLogoutClick} disabled={isLoggingOut}>
+          {isLoggingOut ? 'Saindo...' : 'Sair'}
         </button>
       </aside>
 

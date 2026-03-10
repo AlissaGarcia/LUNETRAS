@@ -15,7 +15,7 @@ interface ClassLevelDistributionItem {
 
 interface ProfessorDashboardProps {
   userName: string;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
   classes: ClassRoom[];
   levelDistribution: LevelDistributionItem[];
   classLevelDistribution: ClassLevelDistributionItem[];

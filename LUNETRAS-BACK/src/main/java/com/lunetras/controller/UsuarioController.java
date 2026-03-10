@@ -1,10 +1,11 @@
 package com.lunetras.controller;
+
 import com.lunetras.dto.ProfessorCadastro;
+import com.lunetras.dto.ProfessorCadastroResponse;
 import com.lunetras.model.Usuario;
 import com.lunetras.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +20,12 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
 
-    //  Cadastrar Professor
+    // Cadastrar professor
     @PostMapping("/professores")
-    public ResponseEntity<Usuario> cadastrarProfessor(
+    public ResponseEntity<ProfessorCadastroResponse> cadastrarProfessor(
             @RequestBody @Valid ProfessorCadastro dto) {
 
-        Usuario usuario = usuarioService.cadastrarProfessor(
+        ProfessorCadastroResponse usuario = usuarioService.cadastrarProfessor(
                 dto.getNome(),
                 dto.getEmail()
         );
@@ -41,7 +42,7 @@ public class UsuarioController {
     }
 
 
-    //  Editar Usuário
+    // Editar usuário
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> editarUsuario(
             @PathVariable Long id,
@@ -53,7 +54,7 @@ public class UsuarioController {
     }
 
 
-    // Desativar Usuário
+    // Desativar usuário
     @PatchMapping("/{id}/desativar")
     public ResponseEntity<Void> desativarUsuario(@PathVariable Long id) {
 
@@ -61,7 +62,8 @@ public class UsuarioController {
 
         return ResponseEntity.noContent().build();
     }
-    // Reativar Usuário
+
+    // Reativar usuário
     @PatchMapping("/{id}/ativar")
     public ResponseEntity<Void> ativarUsuario(@PathVariable Long id) {
 
@@ -70,3 +72,4 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 }
+

@@ -330,6 +330,13 @@
   font-weight: 600;
 }
 
+.copyHint {
+  align-self: center;
+  color: #6b7c96;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 @media (max-width: 980px) {
   .page {
     grid-template-columns: 1fr;

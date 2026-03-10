@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import type { Bimester, StudentEvaluation } from './evaluations';
 import styles from './AdminReportsPage.module.css';
-import { stageLabel, type ClassRoom, type LiteracyStage } from './metrics';
+import { STAGE_COLORS, stageLabel, type ClassRoom, type LiteracyStage } from './metrics';
 import type { Student } from './mockData';
 
 interface AdminReportsPageProps {
@@ -12,7 +12,7 @@ interface AdminReportsPageProps {
   onBackToDashboard: () => void;
   onGoToClasses: () => void;
   onGoToTeachers?: () => void;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
   showTeachersNav?: boolean;
   userRoleLabel?: string;
 }
@@ -27,17 +27,6 @@ const STAGE_ORDER: LiteracyStage[] = [
   'ALFABETICO',
   'ORTOGRAFICO',
 ];
-
-const STAGE_COLORS: Record<LiteracyStage, string> = {
-  SEM_DADOS: '#9ba6ba',
-  ICONICA: '#b392f0',
-  GARATUJA: '#f59e0b',
-  PRE_SILABICO: '#eab308',
-  SILABICO_SEM_VALOR_SONORO: '#60a5fa',
-  SILABICO_COM_VALOR_SONORO: '#3b82f6',
-  ALFABETICO: '#34d399',
-  ORTOGRAFICO: '#10b981',
-};
 
 const BIMESTERS: Bimester[] = ['B1', 'B2', 'B3', 'B4'];
 
@@ -119,6 +108,7 @@ export function AdminReportsPage({
   const [animationProgress, setAnimationProgress] = useState(0);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportClassId, setExportClassId] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const studentsScope = useMemo(() => {
     if (selectedClassId === 'ALL') {
@@ -316,6 +306,19 @@ export function AdminReportsPage({
     setIsExportModalOpen(false);
   }
 
+  async function handleLogoutClick() {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    try {
+      await Promise.resolve(onLogout());
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
+
   useEffect(() => {
     let frameId = 0;
     const durationMs = 1200;
@@ -351,8 +354,8 @@ export function AdminReportsPage({
           <button className={styles.active}>Relatórios</button>
         </nav>
 
-        <button className={styles.logout} onClick={onLogout}>
-          Sair
+        <button className={styles.logout} onClick={handleLogoutClick} disabled={isLoggingOut}>
+          {isLoggingOut ? 'Saindo...' : 'Sair'}
         </button>
       </aside>
 
@@ -504,3 +507,7 @@ export function AdminReportsPage({
     </main>
   );
 }
+
+
+
+

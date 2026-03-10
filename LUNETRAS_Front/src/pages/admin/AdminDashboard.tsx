@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import styles from './AdminDashboard.module.css';
-import { calculateSummary, stageLabel, type ClassRoom, type LiteracyStage } from './metrics';
+import { STAGE_COLORS, calculateSummary, stageLabel, type ClassRoom, type LiteracyStage } from './metrics';
 
 interface LevelDistributionItem {
   stage: LiteracyStage;
@@ -16,7 +16,7 @@ interface ClassLevelDistributionItem {
 
 interface AdminDashboardProps {
   userName: string;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
   classes: ClassRoom[];
   levelDistribution: LevelDistributionItem[];
   classLevelDistribution: ClassLevelDistributionItem[];
@@ -56,6 +56,7 @@ export function AdminDashboard({
   allowRemoveClass = true,
 }: AdminDashboardProps) {
   const [animationProgress, setAnimationProgress] = useState(0);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const summary = useMemo(() => calculateSummary(classes), [classes]);
   const pendingTasks = useMemo(
@@ -90,6 +91,19 @@ export function AdminDashboard({
     return () => cancelAnimationFrame(frameId);
   }, []);
 
+  async function handleLogoutClick() {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    try {
+      await Promise.resolve(onLogout());
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <main className={styles.page}>
       <aside className={styles.sidebar}>
@@ -105,8 +119,8 @@ export function AdminDashboard({
           <button onClick={onGoToReports}>Relatórios</button>
         </nav>
 
-        <button className={styles.logout} onClick={onLogout}>
-          Sair
+        <button className={styles.logout} onClick={handleLogoutClick} disabled={isLoggingOut}>
+          {isLoggingOut ? 'Saindo...' : 'Sair'}
         </button>
       </aside>
 
@@ -145,11 +159,16 @@ export function AdminDashboard({
             <div className={styles.towerChart}>
               {levelDistribution.map((item) => (
                 <div key={item.stage} className={styles.towerItem}>
-                  <span className={styles.towerValue}>{Math.round(item.percent * animationProgress)}%</span>
+                  <span className={styles.towerValue} style={{ color: STAGE_COLORS[item.stage] }}>
+                    {Math.round(item.percent * animationProgress)}%
+                  </span>
                   <div className={styles.towerTrack}>
                     <div
                       className={styles.towerFill}
-                      style={{ height: `${Math.max(4, item.percent * animationProgress)}%` }}
+                      style={{
+                        height: `${Math.max(4, item.percent * animationProgress)}%`,
+                        background: STAGE_COLORS[item.stage],
+                      }}
                     />
                   </div>
                   <small className={styles.towerLabel}>{stageLabel(item.stage)}</small>
@@ -182,11 +201,16 @@ export function AdminDashboard({
                       {classLevels.map((level) => (
                         <div key={`${item.id}-${level.stage}`} className={styles.classCategoryRow}>
                           <small>{stageLabel(level.stage)}</small>
-                          <span>{Math.round(level.percent * animationProgress)}%</span>
+                          <span style={{ color: STAGE_COLORS[level.stage] }}>
+                            {Math.round(level.percent * animationProgress)}%
+                          </span>
                           <div className={styles.progressTrack}>
                             <div
                               className={styles.progressFill}
-                              style={{ width: `${Math.max(0, level.percent * animationProgress)}%` }}
+                              style={{
+                                width: `${Math.max(0, level.percent * animationProgress)}%`,
+                                background: STAGE_COLORS[level.stage],
+                              }}
                             />
                           </div>
                         </div>

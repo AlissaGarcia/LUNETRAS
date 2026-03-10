@@ -10,7 +10,7 @@ interface ProfessorReportsPageProps {
   evaluationsByStudent: Record<string, StudentEvaluation[]>;
   onBackToDashboard: () => void;
   onGoToClasses: () => void;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
 }
 
 export function ProfessorReportsPage(props: ProfessorReportsPageProps) {

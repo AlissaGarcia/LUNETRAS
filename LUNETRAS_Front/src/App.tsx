@@ -774,31 +774,32 @@ function App() {
     setAdminView('TEACHERS');
   }
 
-  async function handleCreateTeacher(payload: { nome: string; email: string; senha: string }): Promise<boolean> {
+  async function handleCreateTeacher(payload: { nome: string; email: string }): Promise<{ ok: boolean; senhaInicial?: string }> {
     if (!isAuthenticated) {
-      return false;
+      return { ok: false };
     }
 
     if (TEMP_FRONT_ONLY_MODE) {
+      const senhaInicial = Math.random().toString(36).slice(2, 10);
       const localTeacher: Teacher = {
         id: `prof-local-${Date.now()}`,
         nome: payload.nome,
         email: payload.email,
         perfil: 'PROFESSOR',
         ativo: true,
-        senhaInicial: payload.senha,
+        senhaInicial,
       };
 
       setTeachers((current) => [localTeacher, ...current]);
-      return true;
+      return { ok: true, senhaInicial };
     }
 
     try {
       const created = await createTeacher(payload);
       setTeachers((current) => [created, ...current]);
-      return true;
+      return { ok: true, senhaInicial: created.senhaInicial };
     } catch {
-      return false;
+      return { ok: false };
     }
   }
 
@@ -1007,3 +1008,4 @@ function App() {
 }
 
 export default App;
+

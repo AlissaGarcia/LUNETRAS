@@ -6,6 +6,7 @@ export interface TeacherApiPayload {
   email?: string;
   perfil?: string;
   ativo?: boolean;
+  senhaInicial?: string;
 }
 
 export interface Teacher {
@@ -14,13 +15,16 @@ export interface Teacher {
   email: string;
   perfil: 'PROFESSOR';
   ativo: boolean;
+  /**
+   * A senha inicial só deve aparecer logo após o cadastro (quando o backend retorna isso).
+   * Em listagens, esse campo normalmente vem vazio/undefined.
+   */
   senhaInicial?: string;
 }
 
 export interface CreateTeacherPayload {
   nome: string;
   email: string;
-  senha: string;
 }
 
 function normalizeTeacher(payload: TeacherApiPayload): Teacher {
@@ -30,6 +34,7 @@ function normalizeTeacher(payload: TeacherApiPayload): Teacher {
     email: payload.email ?? '',
     perfil: 'PROFESSOR',
     ativo: payload.ativo ?? true,
+    senhaInicial: payload.senhaInicial,
   };
 }
 
@@ -41,7 +46,7 @@ export async function listTeachers(): Promise<Teacher[]> {
 }
 
 export async function createTeacher(payload: CreateTeacherPayload): Promise<Teacher> {
-  // O backend atual usa senha inicial automática (RF005), então envia apenas os campos aceitos.
+  // O backend usa senha inicial automática (RF005), então envia apenas os campos aceitos.
   const created = await apiRequest<TeacherApiPayload>('/admin/usuarios/professores', {
     method: 'POST',
     body: {
@@ -64,3 +69,4 @@ export async function activateTeacher(teacherId: string): Promise<void> {
     method: 'PATCH',
   });
 }
+
