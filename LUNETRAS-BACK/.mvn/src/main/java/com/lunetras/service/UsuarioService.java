@@ -69,6 +69,17 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    public void ativarUsuario(Long id) {
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Usuário não encontrado"));
+
+        usuario.setAtivo(true);
+
+        usuarioRepository.save(usuario);
+    }
+
 
     public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();

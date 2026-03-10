@@ -61,4 +61,12 @@ public class UsuarioController {
 
         return ResponseEntity.noContent().build();
     }
+    // Reativar Usuário
+    @PatchMapping("/{id}/ativar")
+    public ResponseEntity<Void> ativarUsuario(@PathVariable Long id) {
+
+        usuarioService.ativarUsuario(id);
+
+        return ResponseEntity.noContent().build();
+    }
 }
