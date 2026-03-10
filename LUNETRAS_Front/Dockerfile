@@ -5,8 +5,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-# API URL aponta para o proxy local (rota /api/)
-ARG VITE_API_URL=http://localhost
+# API URL: empty for Docker (nginx proxy), or set via ARG for specific environments
+ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 

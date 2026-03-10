@@ -194,6 +194,60 @@ O LUNETRAS pode ser utilizado em:
 
 ---
 
+##  Como Executar o Projeto
+
+### Pré-requisitos
+
+* Docker e Docker Compose instalados
+* Node.js (para desenvolvimento local do frontend)
+
+### Execução com Docker (Recomendado)
+
+1. Clone o repositório:
+   ```bash
+   git clone <url-do-repositorio>
+   cd LUNETRAS
+   ```
+
+2. Execute os containers:
+   ```bash
+   docker compose up -d
+   ```
+
+3. Acesse a aplicação:
+   - **Frontend**: `http://localhost:4173` (local) ou URL do Codespace na porta 4173
+   - **Backend API**: `http://localhost:8080` (interno)
+   - **Banco de dados**: `localhost:5432`
+
+### Desenvolvimento Local
+
+Para desenvolvimento do frontend fora do Docker:
+
+1. Entre na pasta do frontend:
+   ```bash
+   cd LUNETRAS_Front
+   npm install
+   cp .env.example .env
+   # Edite .env para VITE_API_URL=http://localhost:8080
+   npm run dev
+   ```
+
+### Configuração de Ambiente
+
+O sistema funciona automaticamente em:
+- **Computador local**: usa `http://localhost:8080` para a API
+- **GitHub Codespace**: usa proxy Nginx interno para comunicação com backend
+- **Docker**: proxy automático entre frontend e backend
+
+Para ambientes específicos, ajuste `VITE_API_URL` no `.env` do frontend.
+
+### Credenciais de Teste
+
+- **Administrador**: `admin@lunetras.com` / `123456`
+- **Professores**: ver `init.sql` para e-mails e senhas
+
+---
+
 ##  Considerações Finais
 
 O **LUNETRAS** é uma solução educacional que une tecnologia e pedagogia, contribuindo para uma alfabetização mais organizada, eficiente e fundamentada em teorias reconhecidas. O sistema visa fortalecer o trabalho docente e apoiar a evolução da aprendizagem dos alunos de forma clara e mensurável.

@@ -47,7 +47,7 @@ services:
       context: ./LUNETRAS_Front
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_API_URL: ${VITE_API_URL:-}
     container_name: lunetras-frontend
     restart: unless-stopped
     depends_on:

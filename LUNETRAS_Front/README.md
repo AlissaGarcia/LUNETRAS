@@ -13,8 +13,12 @@ Aplicação React + TypeScript + Vite para a interface do LUNETRAS.
    cp .env.example .env
    ```
 3. Ajuste a URL da API no `.env`:
+   - **Local (fora do Docker):** `VITE_API_URL=http://localhost:8080`
+   - **Docker/Codespace:** deixe vazio (`VITE_API_URL=`) para usar o proxy Nginx
    ```env
-   VITE_API_URL=http://localhost:8080
+   VITE_API_URL=http://localhost:8080  # para desenvolvimento local
+   # ou
+   VITE_API_URL=  # para Docker/Codespace
    ```
 4. Execute em modo desenvolvimento:
    ```bash
