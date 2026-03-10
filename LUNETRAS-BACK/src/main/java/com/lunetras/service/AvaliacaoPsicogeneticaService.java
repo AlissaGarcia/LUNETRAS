@@ -10,6 +10,8 @@ import com.lunetras.repository.UsuarioRepository;
 import com.lunetras.repository.AlunoRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class AvaliacaoPsicogeneticaService {
@@ -92,6 +94,15 @@ public class AvaliacaoPsicogeneticaService {
         avaliacao.setAluno(aluno);
         avaliacao.setProfessor(professor);
         return avaliacaoPsicogeneticaRepository.save(avaliacao);
+    }
+
+    public AvaliacaoPsicogenetica buscarPorId(Long id) {
+        return avaliacaoPsicogeneticaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Avaliação não encontrada"));
+    }
+
+    public List<AvaliacaoPsicogenetica> listarPorAluno(Long alunoId) {
+        return avaliacaoPsicogeneticaRepository.findByAlunoId(alunoId);
     }
 }
 

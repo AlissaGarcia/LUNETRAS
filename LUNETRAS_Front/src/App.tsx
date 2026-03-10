@@ -27,7 +27,7 @@ import { activateTeacher, createTeacher, disableTeacher, listTeachers, type Teac
 type AdminView = 'DASHBOARD' | 'CLASS_STUDENTS' | 'REPORTS' | 'TEACHERS';
 type ProfessorView = 'DASHBOARD' | 'CLASS_STUDENTS' | 'REPORTS';
 // TODO: Trocar para false quando backend estiver estavel em execucao local.
-const TEMP_FRONT_ONLY_MODE = true;
+const TEMP_FRONT_ONLY_MODE = false;
 
 const LITERACY_STAGE_ORDER: LiteracyStage[] = [
   'SEM_DADOS',

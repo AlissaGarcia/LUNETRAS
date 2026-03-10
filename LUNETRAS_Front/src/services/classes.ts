@@ -390,7 +390,179 @@ export async function createStudent(
 
   throw new Error('Nenhum endpoint disponível para cadastrar aluno.');
 }
+export async function createEvaluation(
+  payload: {
+    alunoId: number;
+    estado: string;
+    nivel: LiteracyStage;
+    observacoes?: string;
+    dataAvaliacao: string;
+    bimestre: 'B1' | 'B2' | 'B3' | 'B4';
+  }
+): Promise<{ id: string }> {
+  const endpointConfigs: Array<{ endpoint: string; body: Record<string, unknown> }> = [
+    {
+      endpoint: '/avaliacoes',
+      body: {
+        alunoId: payload.alunoId,
+        estado: payload.estado,
+        nivel: payload.nivel,
+        observacoes: payload.observacoes ?? '',
+        dataAvaliacao: payload.dataAvaliacao,
+        bimestre: payload.bimestre,
+      },
+    },
+  ];
 
+  let lastError: Error | null = null;
+
+  for (const config of endpointConfigs) {
+    try {
+      const response = await fetchWithTimeout(`${API_URL}${config.endpoint}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config.body),
+      });
+
+      if (response.status === 404) {
+        continue;
+      }
+
+      if (!response.ok) {
+        lastError = new Error(`Erro ${response.status} ao acessar ${config.endpoint}`);
+        continue;
+      }
+
+      if (response.status === 204) {
+        return { id: `eval-${Date.now()}` };
+      }
+
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        return { id: `eval-${Date.now()}` };
+      }
+
+      const result = (await response.json()) as { id: number | string };
+      return {
+        id: String(result.id ?? Date.now()),
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Falha de comunicação com a API.');
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  throw new Error('Nenhum endpoint disponível para criar avaliação.');
+}
+
+export async function listEvaluationsByStudent(studentId: string): Promise<Array<{
+  id: string;
+  nivel: LiteracyStage;
+  bimestre: string;
+  dataAvaliacao: string;
+  observacoes: string;
+}>> {
+  try {
+    const payload = await requestWithFallback<Array<{
+      id?: number | string;
+      nivel?: LiteracyStage;
+      bimestre?: string;
+      dataAvaliacao?: string;
+      observacoes?: string;
+    }>>([`/avaliacoes/aluno/${studentId}`], {
+      method: 'GET',
+    });
+
+    const rawEvaluations = Array.isArray(payload) ? payload : [];
+
+    return rawEvaluations.map((item, index) => ({
+      id: String(item.id ?? `eval-${studentId}-${index}`),
+      nivel: item.nivel ?? 'SEM_DADOS',
+      bimestre: item.bimestre ?? 'B1',
+      dataAvaliacao: item.dataAvaliacao ?? new Date().toISOString().split('T')[0],
+      observacoes: item.observacoes ?? '',
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchReportByTurmaAndBimestre(
+  turmaId: string,
+  bimestre: number,
+  periodoLetivo: number = 2026,
+): Promise<Array<{
+  id: string;
+  alunoNome: string;
+  nivel: LiteracyStage;
+  status: string;
+  observacoes: string;
+}>> {
+  try {
+    const payload = await requestWithFallback<Array<{
+      id?: number | string;
+      aluno?: { nome?: string };
+      alunoNome?: string;
+      nivel?: LiteracyStage;
+      status?: string;
+      observacoes?: string;
+    }>>([
+      `/relatorios/turma/${turmaId}/bimestre/${bimestre}/periodo/${periodoLetivo}`,
+    ], {
+      method: 'GET',
+    });
+
+    const rawData = Array.isArray(payload) ? payload : [];
+
+    return rawData.map((item, index) => ({
+      id: String(item.id ?? index),
+      alunoNome: item.alunoNome ?? item.aluno?.nome ?? 'Aluno',
+      nivel: item.nivel ?? 'SEM_DADOS',
+      status: item.status ?? 'SEM_AVALIACAO',
+      observacoes: item.observacoes ?? '',
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchRelatorioEstatisticas(
+  turmaId: string,
+  bimestre: number,
+  periodoLetivo: number = 2026,
+): Promise<Array<{
+  nivel: LiteracyStage;
+  quantidade: number;
+  percentual: number;
+}>> {
+  try {
+    const payload = await requestWithFallback<Array<{
+      nivel?: LiteracyStage;
+      quantidade?: number;
+      percentual?: number;
+    }>>([
+      `/relatorios/turma/${turmaId}/bimestre/${bimestre}/periodo/${periodoLetivo}/niveis`,
+    ], {
+      method: 'GET',
+    });
+
+    const rawData = Array.isArray(payload) ? payload : [];
+
+    return rawData.map((item) => ({
+      nivel: item.nivel ?? 'SEM_DADOS',
+      quantidade: item.quantidade ?? 0,
+      percentual: item.percentual ?? 0,
+    }));
+  } catch {
+    return [];
+  }
+}
 export async function updateStudent(
   classId: string,
   studentId: string,

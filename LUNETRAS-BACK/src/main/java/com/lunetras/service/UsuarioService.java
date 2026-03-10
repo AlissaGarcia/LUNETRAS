@@ -45,7 +45,7 @@ public class UsuarioService {
         response.setNome(salvo.getNome());
         response.setEmail(salvo.getEmail());
         response.setPerfil(salvo.getPerfil() != null ? salvo.getPerfil().name() : null);
-        response.setAtivo(salvo.getAtivo());
+        response.setAtivo(salvo.isAtivo());
         response.setSenhaInicial(senhaInicial);
         return response;
     }

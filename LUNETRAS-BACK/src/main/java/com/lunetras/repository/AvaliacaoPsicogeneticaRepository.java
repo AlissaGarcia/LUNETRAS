@@ -15,6 +15,8 @@ public interface AvaliacaoPsicogeneticaRepository
 
     Optional<AvaliacaoPsicogenetica> findByAlunoIdAndBimestreAndPeriodoLetivo(Long alunoId, Integer bimestre, Integer periodoLetivo);
 
+    List<AvaliacaoPsicogenetica> findByAlunoId(Long alunoId);
+
     List<AvaliacaoPsicogenetica> findByAluno_Turma_IdAndBimestreAndPeriodoLetivo(Long turmaId, Integer bimestre, Integer periodoLetivo);
 
     @Query("""

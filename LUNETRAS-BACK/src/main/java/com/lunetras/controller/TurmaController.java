@@ -1,5 +1,6 @@
 package com.lunetras.controller;
 
+import com.lunetras.dto.AlunoResponse;
 import com.lunetras.dto.TurmaRequest;
 import com.lunetras.dto.TurmaResponse;
 import com.lunetras.service.TurmaService;
@@ -33,6 +34,14 @@ public class TurmaController {
     @GetMapping("/{id}")
     public ResponseEntity<TurmaResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(turmaService.buscarPorId(id));
+    }
+
+    @GetMapping("/{turmaId}/alunos")
+    public ResponseEntity<List<AlunoResponse>> listarAlunosDaTurma(
+            @PathVariable Long turmaId) {
+
+        List<AlunoResponse> alunos = turmaService.listarAlunosDaTurma(turmaId);
+        return ResponseEntity.ok(alunos);
     }
 
     @DeleteMapping("/{id}")

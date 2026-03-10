@@ -20,6 +20,12 @@ public class AlunoRequest {
 
     private Long turmaId;
 
+    private String nivel; // SEM_DADOS, ICONICA, etc
+
+    private String status; // SEM_AVALIACAO, AVALIADO, REAVALIAR
+
+    private String observacoes;
+
     public String getNome() {
         return nome;
     }
@@ -47,6 +53,30 @@ public class AlunoRequest {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getNivel() {
+        return nivel;
+    }
+
+    public void setNivel(String nivel) {
+        this.nivel = nivel;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getObservacoes() {
+        return observacoes;
+    }
+
+    public void setObservacoes(String observacoes) {
+        this.observacoes = observacoes;
     }
 
     public void setEmail(String email) {

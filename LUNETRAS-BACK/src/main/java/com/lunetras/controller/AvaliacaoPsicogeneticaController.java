@@ -1,10 +1,13 @@
 package com.lunetras.controller;
 
+import com.lunetras.dto.AvaliacaoPsicogeneticaResponse;
 import com.lunetras.model.AvaliacaoPsicogenetica;
 import com.lunetras.service.AvaliacaoPsicogeneticaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/avaliacoes")
@@ -26,5 +29,33 @@ public class AvaliacaoPsicogeneticaController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(criada);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AvaliacaoPsicogeneticaResponse> buscarPorId(
+            @PathVariable Long id) {
+
+        AvaliacaoPsicogenetica avaliacao = avaliacaoService.buscarPorId(id);
+        AvaliacaoPsicogeneticaResponse response = toResponse(avaliacao);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/aluno/{alunoId}")
+    public ResponseEntity<List<AvaliacaoPsicogeneticaResponse>> listarPorAluno(
+            @PathVariable Long alunoId) {
+
+        List<AvaliacaoPsicogenetica> avaliacoes = avaliacaoService.listarPorAluno(alunoId);
+        List<AvaliacaoPsicogeneticaResponse> responses = avaliacoes.stream()
+            .map(this::toResponse)
+            .toList();
+
+        return ResponseEntity.ok(responses);
+    }
+
+    private AvaliacaoPsicogeneticaResponse toResponse(AvaliacaoPsicogenetica avaliacao) {
+        AvaliacaoPsicogeneticaResponse response = new AvaliacaoPsicogeneticaResponse();
+        response.setId(avaliacao.getId());
+        // Mapear outros campos conforme necessário
+        return response;
     }
 }

@@ -1,5 +1,6 @@
 package com.lunetras.service;
 
+import com.lunetras.dto.AlunoResponse;
 import com.lunetras.dto.TurmaRequest;
 import com.lunetras.dto.TurmaResponse;
 import com.lunetras.model.Turma;
@@ -18,11 +19,14 @@ public class TurmaService {
 
     private final TurmaRepository turmaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AlunoService alunoService;
 
     public TurmaService(TurmaRepository turmaRepository,
-                        UsuarioRepository usuarioRepository) {
+                        UsuarioRepository usuarioRepository,
+                        AlunoService alunoService) {
         this.turmaRepository = turmaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.alunoService = alunoService;
     }
 
     public TurmaResponse criar(TurmaRequest dto) {
@@ -57,6 +61,10 @@ public class TurmaService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("Turma não encontrada"));
         return toResponse(turma);
+    }
+
+    public List<AlunoResponse> listarAlunosDaTurma(Long turmaId) {
+        return alunoService.listarPorTurma(turmaId);
     }
 
     public void remover(Long id) {
