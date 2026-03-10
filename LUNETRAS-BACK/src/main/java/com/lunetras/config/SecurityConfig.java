@@ -43,6 +43,27 @@ public class SecurityConfig {
                 .userDetailsService(usuarioDetailsService)
                 .formLogin(form -> form
                         .loginProcessingUrl("/auth/login")
+                        .successHandler((request, response, authentication) -> {
+                            // Return JSON success instead of redirect
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"success\": true}");
+                            response.setStatus(200);
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            // Return JSON error instead of redirect
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"Login failed\"}");
+                            response.setStatus(401);
+                        })
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            // Return JSON success instead of redirect
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"success\": true}");
+                            response.setStatus(200);
+                        })
                         .permitAll());
 
         return http.build();
