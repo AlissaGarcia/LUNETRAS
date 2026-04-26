@@ -1,5 +1,6 @@
 package com.lunetras.config;
 
+import com.lunetras.security.JwtAuthenticationEntryPoint;
 import com.lunetras.service.UsuarioDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -24,48 +26,38 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UsuarioDetailsService usuarioDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Value("${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}")
     private String corsAllowedOrigins;
 
-    public SecurityConfig(UsuarioDetailsService usuarioDetailsService) {
+    public SecurityConfig(UsuarioDetailsService usuarioDetailsService,
+                        JwtAuthenticationFilter jwtAuthenticationFilter,
+                        JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint ) {
         this.usuarioDetailsService = usuarioDetailsService;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+
     }
 
-    @Bean
+     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .anyRequest().authenticated())
-                .userDetailsService(usuarioDetailsService)
-                .formLogin(form -> form
-                        .loginProcessingUrl("/auth/login")
-                        .successHandler((request, response, authentication) -> {
-                            // Return JSON success instead of redirect
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"success\": true}");
-                            response.setStatus(200);
-                        })
-                        .failureHandler((request, response, exception) -> {
-                            // Return JSON error instead of redirect
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"error\": \"Login failed\"}");
-                            response.setStatus(401);
-                        })
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/auth/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            // Return JSON success instead of redirect
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"success\": true}");
-                            response.setStatus(200);
-                        })
-                        .permitAll());
-
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/login").permitAll()
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        
         return http.build();
     }
 
@@ -79,6 +71,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
