@@ -1,5 +1,6 @@
 package com.lunetras.config;
 
+import org.springframework.security.config.http.SessionCreationPolicy;
 import com.lunetras.security.JwtAuthenticationEntryPoint;
 import com.lunetras.service.UsuarioDetailsService;
 import org.springframework.beans.factory.annotation.Value;
