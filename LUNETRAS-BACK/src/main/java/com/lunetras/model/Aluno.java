@@ -1,5 +1,6 @@
 package com.lunetras.model;
 
+import com.lunetras.model.NivelPsicogenetico;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -24,6 +25,15 @@ public class Aluno {
    @JoinColumn (name = "turma_id")
    private Turma turma;
 
+    @Enumerated(EnumType.STRING)
+    private NivelPsicogenetico nivel = NivelPsicogenetico.SEM_DADOS;
+
+    private String status = "SEM_AVALIACAO";
+
+    @Column(columnDefinition = "TEXT")
+    private String observacoes;
+
+
    public Aluno() {
    }
 
@@ -34,10 +44,13 @@ public class Aluno {
     }
 
     public Long getId() {
+
        return id;
+
     }
 
     public void setId(Long id) {
+
        this.id = id;
     }
 
@@ -71,5 +84,29 @@ public class Aluno {
 
     public void setTurma(Turma turma) {
         this.turma = turma;
+    }
+
+    public NivelPsicogenetico getNivel() {
+        return nivel;
+    }
+
+    public void setNivel(NivelPsicogenetico nivel) {
+        this.nivel = nivel;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getObservacoes() {
+        return observacoes;
+    }
+
+    public void setObservacoes(String observacoes) {
+        this.observacoes = observacoes;
     }
 }
