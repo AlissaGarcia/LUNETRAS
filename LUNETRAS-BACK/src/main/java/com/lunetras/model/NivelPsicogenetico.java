@@ -1,6 +1,7 @@
 package com.lunetras.model;
 
 public enum NivelPsicogenetico {
+    SEM_DADOS,
     ICONICA,
     GARATUJA,
     PRE_SILABICO,
