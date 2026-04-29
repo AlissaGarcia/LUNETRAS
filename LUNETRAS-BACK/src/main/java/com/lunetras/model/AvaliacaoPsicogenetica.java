@@ -13,7 +13,6 @@ public class AvaliacaoPsicogenetica {
     private Long id;
 
 
-    //1 a 4
     @Column(nullable = false)
     private Integer bimestre;
 
@@ -24,11 +23,10 @@ public class AvaliacaoPsicogenetica {
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
-    // data da avaliacao
     @Column(nullable = false)
     private LocalDate dataAvaliacao;
 
-    // periodo letivo (2026)
+
     @Column(nullable = false)
     private Integer periodoLetivo;
 
@@ -36,10 +34,11 @@ public class AvaliacaoPsicogenetica {
     @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno aluno;
 
-    // professor responsavel
     @ManyToOne
     @JoinColumn(name = "professor_id", nullable = false)
     private Usuario professor;
+
+    private String status;
 
     public AvaliacaoPsicogenetica() {
     }
@@ -119,5 +118,14 @@ public class AvaliacaoPsicogenetica {
     public void setPeriodoLetivo(Integer periodoLetivo) {
         this.periodoLetivo = periodoLetivo;
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
 }
 
