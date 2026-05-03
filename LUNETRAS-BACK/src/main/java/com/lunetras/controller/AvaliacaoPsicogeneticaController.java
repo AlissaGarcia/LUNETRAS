@@ -55,7 +55,20 @@ public class AvaliacaoPsicogeneticaController {
     private AvaliacaoPsicogeneticaResponse toResponse(AvaliacaoPsicogenetica avaliacao) {
         AvaliacaoPsicogeneticaResponse response = new AvaliacaoPsicogeneticaResponse();
         response.setId(avaliacao.getId());
-        // Mapear outros campos conforme necessário
+        response.setAlunoId(avaliacao.getAluno().getId());
+        response.setAluno(avaliacao.getAluno().getNome());
+
+        if(avaliacao.getAluno().getTurma() != null){
+            response.setTurmaId(avaliacao.getAluno().getTurma().getId());
+            response.setTurma(avaliacao.getAluno().getTurma().getNome());
+        }
+        response.setNivel(avaliacao.getNivel().name());
+        response.setStatus(avaliacao.getStatus());
+        response.setObservacoes(avaliacao.getObservacoes());
+        response.setDataAvaliacao(avaliacao.getDataAvaliacao());
+        response.setBimestre(String.valueOf(avaliacao.getBimestre()));
+        response.setProfessorNome(avaliacao.getProfessor().getNome());
+
         return response;
     }
 }
