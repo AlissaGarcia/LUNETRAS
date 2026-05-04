@@ -12,9 +12,7 @@ public class ProfessorCadastroResponse {
     private String perfil;
     private Boolean ativo;
 
-    /**
-     * Senha inicial gerada automaticamente. Deve ser exibida apenas uma vez ao admin.
-     */
+
     private String senhaInicial;
 }
 
