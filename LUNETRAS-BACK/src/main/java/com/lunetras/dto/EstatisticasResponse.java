@@ -14,7 +14,6 @@ public class EstatisticasResponse {
 
     public EstatisticasResponse() {}
 
-    // Getters
     public Long getTurmaId() { return turmaId; }
     public String getNomeTurma() { return nomeTurma; }
     public Integer getBimestre() { return bimestre; }
@@ -23,7 +22,6 @@ public class EstatisticasResponse {
     public Map<String, Integer> getNivelParaQuantidade() { return nivelParaQuantidade; }
     public List<EstatisticaNivel> getEstatisticas() { return estatisticas; }
 
-    // Setters
     public void setTurmaId(Long turmaId) { this.turmaId = turmaId; }
     public void setNomeTurma(String nomeTurma) { this.nomeTurma = nomeTurma; }
     public void setBimestre(Integer bimestre) { this.bimestre = bimestre; }
