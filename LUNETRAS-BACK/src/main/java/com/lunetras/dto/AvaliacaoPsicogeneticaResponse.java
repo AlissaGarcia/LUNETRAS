@@ -17,7 +17,6 @@ public class AvaliacaoPsicogeneticaResponse {
 
     public AvaliacaoPsicogeneticaResponse() {}
 
-    // Getters
     public Long getId() { return id; }
     public Long getAlunoId() { return alunoId; }
     public String getAluno() { return aluno; }
@@ -30,7 +29,6 @@ public class AvaliacaoPsicogeneticaResponse {
     public String getBimestre() { return bimestre; }
     public String getProfessorNome() { return professorNome; }
 
-    // Setters
     public void setId(Long id) { this.id = id; }
     public void setAlunoId(Long alunoId) { this.alunoId = alunoId; }
     public void setAluno(String aluno) { this.aluno = aluno; }
