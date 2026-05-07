@@ -19,8 +19,6 @@ import java.util.List;
 public class UsuarioController {
     private final UsuarioService usuarioService;
 
-
-    // Cadastrar professor
     @PostMapping("/professores")
     public ResponseEntity<ProfessorCadastroResponse> cadastrarProfessor(
             @RequestBody @Valid ProfessorCadastro dto) {
@@ -34,15 +32,12 @@ public class UsuarioController {
     }
 
 
-    // Listar usuários
     @GetMapping
     public ResponseEntity<List<Usuario>> listarUsuarios() {
 
         return ResponseEntity.ok(usuarioService.listarUsuarios());
     }
 
-
-    // Editar usuário
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> editarUsuario(
             @PathVariable Long id,
@@ -53,8 +48,6 @@ public class UsuarioController {
         );
     }
 
-
-    // Desativar usuário
     @PatchMapping("/{id}/desativar")
     public ResponseEntity<Void> desativarUsuario(@PathVariable Long id) {
 
@@ -63,7 +56,6 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    // Reativar usuário
     @PatchMapping("/{id}/ativar")
     public ResponseEntity<Void> ativarUsuario(@PathVariable Long id) {
 
@@ -72,4 +64,3 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 }
-
