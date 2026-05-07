@@ -27,6 +27,17 @@ public class AlunoService {
         aluno.setNome(dto.getNome());
         aluno.setEmail(dto.getEmail());
         aluno.setDataNascimento(dto.getDataNascimento());
+        if (dto.getNivel() != null && !dto.getNivel().isBlank()) {
+            try {
+                aluno.setNivel(NivelPsicogenetico.valueOf(dto.getNivel()));
+            } catch (IllegalArgumentException e) {
+                aluno.setNivel(NivelPsicogenetico.SEM_DADOS);
+            }
+        } else {
+            aluno.setNivel(NivelPsicogenetico.SEM_DADOS);
+        }
+        aluno.setStatus(dto.getStatus() != null ? dto.getStatus() : "SEM_AVALIACAO");
+        aluno.setObservacoes(dto.getObservacoes());
 
         if (dto.getTurmaId() != null) {
             Turma turma = turmaRepository.findById(dto.getTurmaId())
@@ -78,6 +89,13 @@ public class AlunoService {
             Turma turma = turmaRepository.findById(dto.getTurmaId())
                     .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
             aluno.setTurma(turma);
+        }
+        if (dto.getNivel() != null && !dto.getNivel().isBlank()) {
+            try {
+                aluno.setNivel(NivelPsicogenetico.valueOf(dto.getNivel()));
+            } catch (IllegalArgumentException e) {
+
+            }
         }
 
         return toResponse(alunoRepository.save(aluno));
