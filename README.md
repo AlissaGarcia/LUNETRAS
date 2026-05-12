@@ -3,6 +3,7 @@ Repositório destinado ao LUNETRAS: sistema educacional para avaliação, regist
 ##  Autores
 
 * Alissa Garcia
+* Aline Garcia
 * Fernanda Lara
 * José Ailton
 * Lucas Emanuel
