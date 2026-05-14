@@ -373,6 +373,7 @@ function App() {
 
     localStorage.removeItem('lunetras_auth');
     localStorage.removeItem('lunetras_usuario');
+    localStorage.removeItem('lunetras_token');
     setIsAuthenticated(false);
     setAdminView('DASHBOARD');
     setProfessorView('DASHBOARD');
@@ -407,7 +408,7 @@ function App() {
     try {
       const createdClass = await createClass({
         nome: input.nome,
-        professor: input.professor,
+        professorId: input.professorId,
       });
 
       setClasses((current) => [createdClass, ...current]);
@@ -945,6 +946,7 @@ function App() {
         classRoom={selectedClass ?? null}
         students={selectedClass ? studentsByClass[selectedClass.id] ?? [] : []}
         evaluationsByStudent={evaluationsByStudent}
+        teachers={teachers}
         onSelectClass={handleOpenClass}
         onCreateClass={handleCreateClass}
         onAddStudentToClass={handleAddStudentToClass}

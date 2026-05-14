@@ -37,6 +37,19 @@ interface CollectionPayload<T> {
 const CLASS_ENDPOINTS = ['/turmas', '/classes'];
 const REQUEST_TIMEOUT_MS = 10000;
 
+function getAuthToken(): string | null {
+  try {
+    return localStorage.getItem('lunetras_token');
+  } catch {
+    return null;
+  }
+}
+
+function buildAuthHeaders(): Record<string, string> {
+  const token = getAuthToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = REQUEST_TIMEOUT_MS): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -89,9 +102,10 @@ async function requestWithFallback<T>(endpoints: string[], init: RequestInit): P
     try {
       const response = await fetchWithTimeout(`${API_URL}${endpoint}`, {
         ...init,
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
+          ...buildAuthHeaders(),
           ...(init.headers ?? {}),
         },
       });
@@ -151,21 +165,11 @@ export async function listClasses(): Promise<ClassRoom[]> {
   return rawClasses.map((item, index) => normalizeClass(item, `turma-${index + 1}`));
 }
 
-export async function createClass(input: { nome: string; professor?: string }): Promise<ClassRoom> {
-  const storedUser = localStorage.getItem('lunetras_usuario');
-  let professorId: number | undefined;
-
-  if (storedUser) {
-    try {
-      const parsed = JSON.parse(storedUser) as { id?: number | string; perfil?: string };
-      const maybeId = Number(parsed.id);
-      if (!Number.isNaN(maybeId) && parsed.perfil === 'PROFESSOR') {
-        professorId = maybeId;
-      }
-    } catch {
-      professorId = undefined;
-    }
-  }
+export async function createClass(input: { nome: string; professorId?: string | number }): Promise<ClassRoom> {
+  const professorId =
+    input.professorId === undefined || input.professorId === null || input.professorId === ''
+      ? undefined
+      : Number(input.professorId);
 
   const endpointConfigs: Array<{ endpoint: string; body: Record<string, unknown> }> = [
     {
@@ -212,9 +216,10 @@ export async function createClass(input: { nome: string; professor?: string }): 
     try {
       const response = await fetchWithTimeout(`${API_URL}${config.endpoint}`, {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
+          ...buildAuthHeaders(),
         },
         body: JSON.stringify(config.body),
       });
@@ -310,6 +315,9 @@ export async function createStudent(
         email: generatedEmail,
         dataNascimento: payload.dataNascimento,
         turmaId: numericClassId,
+        nivel: payload.nivel,
+        status: payload.status,
+        observacoes: payload.observacoes ?? '',
       },
     },
     {
@@ -319,6 +327,9 @@ export async function createStudent(
         email: generatedEmail,
         data_nascimento: payload.dataNascimento,
         turma_id: numericClassId,
+        nivel: payload.nivel,
+        status: payload.status,
+        observacoes: payload.observacoes ?? '',
       },
     },
     {
@@ -328,6 +339,9 @@ export async function createStudent(
         email: generatedEmail,
         dataNascimento: payload.dataNascimento,
         turma: numericClassId ? { id: numericClassId } : undefined,
+        nivel: payload.nivel,
+        status: payload.status,
+        observacoes: payload.observacoes ?? '',
       },
     },
     {
@@ -346,9 +360,10 @@ export async function createStudent(
     try {
       const response = await fetchWithTimeout(`${API_URL}${config.endpoint}`, {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
+          ...buildAuthHeaders(),
         },
         body: JSON.stringify(config.body),
       });

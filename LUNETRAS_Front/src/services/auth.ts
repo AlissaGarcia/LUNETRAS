@@ -9,15 +9,19 @@ export interface User {
   id: string;
   nome: string;
   perfil: 'ADMINISTRADOR' | 'PROFESSOR';
+  email?: string;
 }
 
 export interface LoginResponse {
   usuario: User;
+  token: string;
 }
 
-interface BackendMeResponse  {
+interface BackendLoginResponse {
+  token: string;
   nome: string;
-  perfil:string;
+  perfil: string;
+  id: number | string;
 }
 
 function normalizeProfile(perfil: string): User['perfil'] {
@@ -29,29 +33,30 @@ function normalizeProfile(perfil: string): User['perfil'] {
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  await apiRequest<void>('/auth/login', {
-     method: 'POST',
-     body: new URLSearchParams({
-       username: payload.email,
-       password: payload.senha,
-     }),
+  const response = await apiRequest<BackendLoginResponse>('/auth/login', {
+    method: 'POST',
+    body: {
+      email: payload.email,
+      senha: payload.senha,
+    },
   });
 
-  const me = await apiRequest<BackendMeResponse>('/auth/me', {
-     method: 'GET',
-   });
+  // O backend agora usa JWT: salvamos o token para autorizar as próximas requisições.
+  localStorage.setItem('lunetras_token', response.token);
 
-   return {
-     usuario: {
-       id: '',
-       nome: me.nome,
-       perfil: normalizeProfile(me.perfil),
-     },
-   };
- }
+  return {
+    token: response.token,
+    usuario: {
+      id: String(response.id ?? ''),
+      nome: response.nome ?? '',
+      perfil: normalizeProfile(response.perfil ?? ''),
+      email: payload.email,
+    },
+  };
+}
 
- export async function logout(): Promise<void> {
-   await apiRequest<void>('/auth/logout', {
-     method: 'POST',
-   });
- }
+export async function logout(): Promise<void> {
+  // Backend JWT não precisa de logout server-side para invalidar o token local.
+  localStorage.removeItem('lunetras_token');
+}
+

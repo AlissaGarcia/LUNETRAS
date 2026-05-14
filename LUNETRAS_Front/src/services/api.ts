@@ -7,7 +7,7 @@ type RequestBody = unknown | URLSearchParams;
 interface RequestOptions {
   method?: HttpMethod;
   body?: RequestBody;
-   headers?: Record<string, string>;
+  headers?: Record<string, string>;
 }
 
 export interface ApiErrorPayload {
@@ -24,6 +24,15 @@ export class ApiError extends Error {
     this.status = status;
   }
 }
+
+function getAuthToken(): string | null {
+  try {
+    return localStorage.getItem('lunetras_token');
+  } catch {
+    return null;
+  }
+}
+
 function resolveBody(body: RequestBody | undefined): BodyInit | undefined {
   if (!body) {
     return undefined;
@@ -37,27 +46,32 @@ function resolveBody(body: RequestBody | undefined): BodyInit | undefined {
 }
 
 function resolveHeaders(body: RequestBody | undefined, headers?: Record<string, string>) {
+  const token = getAuthToken();
+  const authHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
   if (body instanceof URLSearchParams) {
     return {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      ...authHeader,
       ...(headers ?? {}),
     };
   }
 
   return {
     'Content-Type': 'application/json',
+    ...authHeader,
     ...(headers ?? {}),
   };
 }
 
 export async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-const { method = 'GET', body, headers } = options;
+  const { method = 'GET', body, headers } = options;
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
-    credentials: 'include',
-       headers: resolveHeaders(body, headers),
-       body: resolveBody(body),
+    credentials: 'omit',
+    headers: resolveHeaders(body, headers),
+    body: resolveBody(body),
   });
 
   if (!response.ok) {
@@ -76,7 +90,7 @@ const { method = 'GET', body, headers } = options;
     return undefined as T;
   }
 
- const contentType = response.headers.get('content-type') ?? '';
+  const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('application/json')) {
     return undefined as T;
   }

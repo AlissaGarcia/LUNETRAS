@@ -4,6 +4,7 @@ import type { Bimester, StudentEvaluation } from './evaluations';
 import { stageLabel, type ClassRoom, type LiteracyStage } from './metrics';
 import type { Student } from './mockData';
 import type { CreateClassInput, StudentStatus } from './types';
+import type { Teacher } from '../../services/teachers';
 
 interface AdminClassStudentsPageProps {
   userName: string;
@@ -11,6 +12,7 @@ interface AdminClassStudentsPageProps {
   classRoom: ClassRoom | null;
   students: Student[];
   evaluationsByStudent: Record<string, StudentEvaluation[]>;
+  teachers?: Teacher[];
   onSelectClass: (classId: string) => void;
   onCreateClass: (input: CreateClassInput) => Promise<boolean>;
   onAddStudentToClass: (
@@ -72,6 +74,7 @@ export function AdminClassStudentsPage({
   classRoom,
   students,
   evaluationsByStudent,
+  teachers = [],
   onSelectClass,
   onCreateClass,
   onAddStudentToClass,
@@ -99,6 +102,7 @@ export function AdminClassStudentsPage({
   const [selectedBimester, setSelectedBimester] = useState<Bimester>('B1');
 
   const [newClassName, setNewClassName] = useState('');
+  const [newClassTeacherId, setNewClassTeacherId] = useState('');
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentBirthDate, setNewStudentBirthDate] = useState('');
   const [formError, setFormError] = useState('');
@@ -170,15 +174,28 @@ export function AdminClassStudentsPage({
       return;
     }
 
+    if (!newClassTeacherId) {
+      setFormError('Selecione o professor responsável pela turma.');
+      return;
+    }
+
+    const selectedTeacher = teachers.find((teacher) => teacher.id === newClassTeacherId) ?? null;
+    if (!selectedTeacher) {
+      setFormError('Selecione um professor válido.');
+      return;
+    }
+
     setIsCreatingClass(true);
     setFormError('');
     const created = await onCreateClass({
       nome: newClassName.trim(),
-      professor: 'A definir',
+      professor: selectedTeacher.nome,
+      professorId: selectedTeacher.id,
     });
 
     if (created) {
       setNewClassName('');
+      setNewClassTeacherId('');
       setIsCreateClassModalOpen(false);
     } else {
       setFormError('Não foi possível criar a turma no backend. Verifique se a API está ativa.');
@@ -403,6 +420,19 @@ export function AdminClassStudentsPage({
                 <label>
                   Nome da turma
                   <input value={newClassName} onChange={(event) => setNewClassName(event.target.value)} placeholder="" />
+                </label>
+                <label>
+                  Professor responsável
+                  <select value={newClassTeacherId} onChange={(event) => setNewClassTeacherId(event.target.value)}>
+                    <option value="">Selecione um professor</option>
+                    {teachers
+                      .filter((teacher) => teacher.ativo)
+                      .map((teacher) => (
+                        <option key={teacher.id} value={teacher.id}>
+                          {teacher.nome} ({teacher.email})
+                        </option>
+                      ))}
+                  </select>
                 </label>
               </div>
               {formError ? <p className={styles.formError}>{formError}</p> : null}

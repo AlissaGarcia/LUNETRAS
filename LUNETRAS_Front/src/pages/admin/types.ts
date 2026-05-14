@@ -12,6 +12,7 @@ export interface NewStudentInput {
 export interface CreateClassInput {
   nome: string;
   professor?: string;
+  professorId?: string;
   totalAlunos?: number;
   percentualAlfabetizacao?: number;
   pendencias?: number;
