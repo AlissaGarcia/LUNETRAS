@@ -4,6 +4,7 @@ import com.lunetras.dto.AlunoRequest;
 import com.lunetras.dto.AlunoResponse;
 import com.lunetras.dto.AlunoUpdateRequest;
 import com.lunetras.model.Aluno;
+import com.lunetras.model.NivelPsicogenetico;
 import com.lunetras.model.Turma;
 import com.lunetras.repository.AlunoRepository;
 import com.lunetras.repository.TurmaRepository;

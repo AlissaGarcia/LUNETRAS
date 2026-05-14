@@ -127,5 +127,4 @@ public class AvaliacaoPsicogenetica {
         this.status = status;
     }
 }
-}
 
