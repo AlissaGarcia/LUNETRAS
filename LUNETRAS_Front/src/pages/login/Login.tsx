@@ -175,12 +175,6 @@ export function Login({ onLoginSuccess }: LoginProps) {
           </p>
         </form>
       </section>
-
-      <img
-        className={styles.brandCredit}
-        src="/DESBRAV-Technology-todos-os-direitos-reservados-sem-fundo.png"
-        alt="Desbrav Technology"
-      />
     </main>
   );
 }
