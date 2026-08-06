@@ -9,7 +9,7 @@ import { ProfessorDashboard } from './pages/professor/ProfessorDashboard';
 import { ProfessorReportsPage } from './pages/professor/ProfessorReportsPage';
 import type { Bimester, StudentEvaluation } from './pages/admin/evaluations';
 import { literacyStageFactor, type ClassRoom, type LiteracyStage } from './pages/admin/metrics';
-import { buildStudentsForNewClass, INITIAL_CLASSES, INITIAL_STUDENTS_BY_CLASS, type Student } from './pages/admin/mockData';
+import { buildStudentsForNewClass, type Student } from './pages/admin/mockData';
 import type { CreateClassInput } from './pages/admin/types';
 import { Login } from './pages/login/Login';
 import { logout } from './services/auth';
@@ -26,7 +26,7 @@ import { activateTeacher, createTeacher, disableTeacher, listTeachers, type Teac
 
 type AdminView = 'DASHBOARD' | 'CLASS_STUDENTS' | 'REPORTS' | 'TEACHERS';
 type ProfessorView = 'DASHBOARD' | 'CLASS_STUDENTS' | 'REPORTS';
-// TODO: Trocar para false quando backend estiver estavel em execucao local.
+// O frontend passou a priorizar os dados vindos do backend; o fallback local é apenas de segurança.
 const TEMP_FRONT_ONLY_MODE = false;
 
 const LITERACY_STAGE_ORDER: LiteracyStage[] = [
@@ -67,19 +67,6 @@ const DEFAULT_TEACHERS: Teacher[] = [
   },
 ];
 
-const BIMESTER_ORDER: Bimester[] = ['B1', 'B2', 'B3', 'B4'];
-
-const LITERACY_PROGRESS_ORDER: LiteracyStage[] = [
-  'SEM_DADOS',
-  'ICONICA',
-  'GARATUJA',
-  'PRE_SILABICO',
-  'SILABICO_SEM_VALOR_SONORO',
-  'SILABICO_COM_VALOR_SONORO',
-  'ALFABETICO',
-  'ORTOGRAFICO',
-];
-
 function statusByLevel(level: LiteracyStage) {
   if (level === 'SEM_DADOS') {
     return 'SEM_AVALIACAO' as const;
@@ -90,51 +77,6 @@ function statusByLevel(level: LiteracyStage) {
   }
 
   return 'REAVALIAR' as const;
-}
-
-function buildPlaceholderEvaluations(
-  classes: ClassRoom[],
-  studentsByClass: Record<string, Student[]>,
-): Record<string, StudentEvaluation[]> {
-  const entries: Array<[string, StudentEvaluation[]]> = [];
-  const bimesterMeta = [
-    { code: 'B1' as const, monthDay: '03-15', note: 'Diagnóstico inicial e reconhecimento de padrões de escrita.' },
-    { code: 'B2' as const, monthDay: '05-20', note: 'Consolidação de hipóteses e correspondência fonética.' },
-    { code: 'B3' as const, monthDay: '08-25', note: 'Avanço com atividades de leitura e escrita orientada.' },
-    { code: 'B4' as const, monthDay: '11-18', note: 'Fechamento anual com síntese de desenvolvimento.' },
-  ];
-
-  Object.entries(studentsByClass).forEach(([classId, students]) => {
-    const classRoom = classes.find((item) => item.id === classId);
-    const professorNome = classRoom?.professor ?? 'A definir';
-
-    students.forEach((student) => {
-      const finalLevelIndex = Math.max(0, LITERACY_PROGRESS_ORDER.indexOf(student.nivel));
-
-      const evaluations = bimesterMeta.map((meta, index) => {
-        const offset = BIMESTER_ORDER.length - (index + 1);
-        const stageIndex = Math.max(0, finalLevelIndex - offset);
-        const nivel = LITERACY_PROGRESS_ORDER[stageIndex] ?? 'SEM_DADOS';
-        const dataAvaliacao = `2026-${meta.monthDay}`;
-
-        return {
-          id: `${student.id}-${meta.code}`,
-          studentId: student.id,
-          classId,
-          bimestre: meta.code,
-          nivel,
-          status: statusByLevel(nivel),
-          observacoes: `${meta.note} Nivel observado: ${nivel}.`,
-          dataAvaliacao,
-          professorNome,
-        } satisfies StudentEvaluation;
-      });
-
-      entries.push([student.id, evaluations]);
-    });
-  });
-
-  return Object.fromEntries(entries);
 }
 
 function resolveCurrentUser() {
@@ -182,14 +124,6 @@ function App() {
   const userName = currentUser.nome;
   const userProfile = currentUser.perfil;
 
-  function loadFallbackData() {
-    setClasses(INITIAL_CLASSES);
-    setStudentsByClass(INITIAL_STUDENTS_BY_CLASS);
-    setTeachers(DEFAULT_TEACHERS);
-    setEvaluationsByStudent(buildPlaceholderEvaluations(INITIAL_CLASSES, INITIAL_STUDENTS_BY_CLASS));
-    setSelectedClassId(INITIAL_CLASSES[0]?.id ?? '');
-  }
-
   useEffect(() => {
     if (!isAuthenticated) {
       setClasses([]);
@@ -205,7 +139,11 @@ function App() {
 
       try {
         if (TEMP_FRONT_ONLY_MODE) {
-          loadFallbackData();
+          setClasses([]);
+          setStudentsByClass({});
+          setTeachers(DEFAULT_TEACHERS);
+          setEvaluationsByStudent({});
+          setSelectedClassId('');
           return;
         }
 
@@ -217,14 +155,18 @@ function App() {
         setClasses(payload.classes);
         setStudentsByClass(payload.studentsByClass);
         setTeachers(teachersPayload);
-        setEvaluationsByStudent({});
+        setEvaluationsByStudent(payload.evaluationsByStudent);
 
         if (payload.classes.length > 0) {
           setSelectedClassId((current) => current || payload.classes[0].id);
         }
       } catch {
         if (!cancelled) {
-          loadFallbackData();
+          setClasses([]);
+          setStudentsByClass({});
+          setTeachers(DEFAULT_TEACHERS);
+          setEvaluationsByStudent({});
+          setSelectedClassId('');
         }
       } finally {
         if (!cancelled) {
@@ -347,6 +289,7 @@ function App() {
     const payload = await hydrateClassesAndStudents();
     setClasses(payload.classes);
     setStudentsByClass(payload.studentsByClass);
+    setEvaluationsByStudent(payload.evaluationsByStudent);
 
     if (payload.classes.length === 0) {
       setSelectedClassId('');

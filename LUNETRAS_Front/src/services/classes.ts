@@ -1,4 +1,5 @@
 import { API_URL } from '../config/env';
+import type { StudentEvaluation } from '../pages/admin/evaluations';
 import type { ClassRoom, LiteracyStage } from '../pages/admin/metrics';
 import type { Student } from '../pages/admin/mockData';
 import type { StudentStatus } from '../pages/admin/types';
@@ -84,13 +85,25 @@ function normalizeClass(payload: ClassApiPayload, fallbackId: string): ClassRoom
   };
 }
 
+function inferStatusByLevel(level: LiteracyStage): StudentStatus {
+  if (level === 'SEM_DADOS') {
+    return 'SEM_AVALIACAO';
+  }
+
+  if (level === 'ALFABETICO' || level === 'ORTOGRAFICO') {
+    return 'AVALIADO';
+  }
+
+  return 'REAVALIAR';
+}
+
 function normalizeStudent(payload: StudentApiPayload, fallbackId: string): Student {
   return {
     id: toStringId(payload.id, fallbackId),
     nome: payload.nome ?? 'Aluno sem nome',
     dataNascimento: payload.dataNascimento ?? '2017-01-01',
     nivel: payload.nivel ?? 'SEM_DADOS',
-    status: payload.status ?? 'SEM_AVALIACAO',
+    status: payload.status ?? inferStatusByLevel(payload.nivel ?? 'SEM_DADOS'),
     observacoes: payload.observacoes ?? '',
   };
 }
@@ -387,13 +400,29 @@ export async function createStudent(
       const contentType = response.headers.get('content-type') ?? '';
       if (!contentType.includes('application/json')) {
         return normalizeStudent(
-          { nome: payload.nome, dataNascimento: payload.dataNascimento, nivel: payload.nivel, status: payload.status },
+          {
+            nome: payload.nome,
+            dataNascimento: payload.dataNascimento,
+            nivel: payload.nivel,
+            status: payload.status,
+            observacoes: payload.observacoes ?? '',
+          },
           `${classId}-aluno-${Date.now()}`,
         );
       }
 
       const created = (await response.json()) as StudentApiPayload;
-      return normalizeStudent(created, `${classId}-aluno-${Date.now()}`);
+      return normalizeStudent(
+        {
+          ...created,
+          nome: created.nome ?? payload.nome,
+          dataNascimento: created.dataNascimento ?? payload.dataNascimento,
+          nivel: created.nivel ?? payload.nivel,
+          status: created.status ?? payload.status,
+          observacoes: created.observacoes ?? payload.observacoes ?? '',
+        },
+        `${classId}-aluno-${Date.now()}`,
+      );
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Falha de comunicação com a API.');
     }
@@ -435,9 +464,10 @@ export async function createEvaluation(
     try {
       const response = await fetchWithTimeout(`${API_URL}${config.endpoint}`, {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
+          ...buildAuthHeaders(),
         },
         body: JSON.stringify(config.body),
       });
@@ -610,6 +640,7 @@ export async function removeStudent(classId: string, studentId: string): Promise
 export async function hydrateClassesAndStudents(): Promise<{
   classes: ClassRoom[];
   studentsByClass: Record<string, Student[]>;
+  evaluationsByStudent: Record<string, StudentEvaluation[]>;
 }> {
   const classes = await listClasses();
 
@@ -621,12 +652,64 @@ export async function hydrateClassesAndStudents(): Promise<{
       } catch {
         students = [];
       }
-      return [item.id, students] as const;
+
+      const evaluationsByStudentEntry: Record<string, StudentEvaluation[]> = {};
+
+      for (const student of students) {
+        try {
+          const evaluations = await listEvaluationsByStudent(student.id);
+          if (evaluations.length > 0) {
+            const latestEvaluation = [...evaluations].sort((left, right) => {
+              const leftNumber = Number.parseInt(left.bimestre.replace('B', ''), 10) || 0;
+              const rightNumber = Number.parseInt(right.bimestre.replace('B', ''), 10) || 0;
+              return rightNumber - leftNumber;
+            })[0];
+
+            if (latestEvaluation) {
+              evaluationsByStudentEntry[student.id] = evaluations.map((evaluation) => ({
+                id: evaluation.id,
+                studentId: student.id,
+                classId: item.id,
+                bimestre: evaluation.bimestre as StudentEvaluation['bimestre'],
+                nivel: evaluation.nivel,
+                status: inferStatusByLevel(evaluation.nivel),
+                observacoes: evaluation.observacoes,
+                dataAvaliacao: evaluation.dataAvaliacao,
+                professorNome: 'A definir',
+              }));
+
+              students = students.map((currentStudent) =>
+                currentStudent.id === student.id
+                  ? {
+                      ...currentStudent,
+                      nivel: latestEvaluation.nivel,
+                      status: inferStatusByLevel(latestEvaluation.nivel),
+                      observacoes: latestEvaluation.observacoes,
+                    }
+                  : currentStudent,
+              );
+            }
+          }
+        } catch {
+          // Mantém o aluno com os dados básicos caso não haja avaliações disponíveis.
+        }
+      }
+
+      return [item.id, students, evaluationsByStudentEntry] as const;
     }),
   );
 
+  const studentsByClass = Object.fromEntries(studentsEntries.map(([classId, students]) => [classId, students])) as Record<
+    string,
+    Student[]
+  >;
+  const evaluationsByStudent = Object.fromEntries(
+    studentsEntries.flatMap(([, , evaluationsByStudentEntry]) => Object.entries(evaluationsByStudentEntry)),
+  ) as Record<string, StudentEvaluation[]>;
+
   return {
     classes,
-    studentsByClass: Object.fromEntries(studentsEntries),
+    studentsByClass,
+    evaluationsByStudent,
   };
 }
